@@ -10,21 +10,32 @@ bluebird.promisifyAll(redis);
 
 dotenv.config();
 
-//setup express server
+/**
+ * Creates endpoints for HTTP response and requests.
+ */
 const app = express();
 app.use("/static", express.static(`${__dirname}/static`));
 app.use(express.json());
 app.locals.index = 1000000000;
 
+/**
+ * Used to listen for API calls on selected port
+ */
 const server = http.createServer(app);
-const connected_clients = {}; //const refernce, mutable array
 
+/**
+ * internal list of connected clients
+ */
+const connected_clients = {}; //const refernce, mutable array
+/**
+ * Client for redis communication
+ */
 const redisClient = redis.createClient();
 /**
  * Authenticate JWT for incoming requests
- * @param {request object} req
- * @param {response object} res
- * @param {function} next
+ * @param {request object} req request stream from client
+ * @param {response object} res response stream to client
+ * @param {function} next function called upon completion of 
  */
 function authenticate(req, res, next) {
   let token;
