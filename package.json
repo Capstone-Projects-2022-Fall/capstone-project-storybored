@@ -1,0 +1,25 @@
+{
+  "name": "capstone-project-storybored",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Capstone-Projects-2022-Fall/capstone-project-storybored.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Capstone-Projects-2022-Fall/capstone-project-storybored/issues"
+  },
+  "homepage": "https://github.com/Capstone-Projects-2022-Fall/capstone-project-storybored#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "jsonwebtoken": "^8.5.1"
+  },
+  "devDependencies": {}
+}
