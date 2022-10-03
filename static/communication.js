@@ -1,5 +1,5 @@
-const { application } = require("express");
-const { cloneElement } = require("react");
+// const { application } = require("express");
+// const { cloneElement } = require("react");
 
 var context  = {
 	username: 'user' + parseInt(Math.random()*100000),
@@ -35,7 +35,8 @@ async function getToken(){
 
 async function join(){
 	return fetch(`${context.roomID}/join`, {
-		method: POST,
+		// POST wasn't in quotes 
+		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 			'Authorization': `Bearer ${context.token}`
@@ -45,6 +46,10 @@ async function join(){
 
 async function connect() {
 	await getToken();
+
+	// was missing this line - need to make EventSource to open persistent connection to server - SSE 
+	context.eventSource = new EventSource(`/connect?token=${context.token}`);
+	
 	context.eventSource.addEventListener('add-peer', addPeer, false);
 	context.eventSource.addEventListener('remove-peer', removePeer, false);
 	context.eventSource.addEventListener('session-description', sesssionDescription, false);
@@ -63,27 +68,33 @@ function addPeer(data) {
 
 	let peer = new RTCPeerConnection(rtcConfig);
 
+	// was missing this line - need to add new peer to peers list 
+	context.peers[message.peer.id] = peer;
+
 	peer.onicecandidate = function (event) {
 		if(event.candidate) {
-			relay(message.peer.id, event.data)
+			// was missing second parameter 'ice-candidate' in relay function
+			relay(message.peer.id, 'ice-candidate', event.candidate);
 		}
 	};
 
-	if(message.offer) {
-		let channel = peer.createDataChannel('updates');
-		channel.onmessage = function (event) {
-			onPeerData(message.peer.id, event.data)
-		};
-		context.channels[message.peer.id] = channel;
-		createOffer(message.peer.id, peer);
-	}else{
-		peer.ondatachannel =  function (event) {
-			context.channels[message.peer.id] = event.channel;
-			event.channel.onmessage =  function (evn) {
-				onPeerData(message.peer.id, evt.data);
-			};
-		};
-	}
+	if (message.offer) {
+        // create the data channel, map peer updates
+        let channel = peer.createDataChannel('updates');
+        channel.onmessage = function (event) {
+            onPeerData(message.peer.id, event.data);
+        };
+        context.channels[message.peer.id] = channel;
+        createOffer(message.peer.id, peer);
+    } else {
+        peer.ondatachannel = function (event) {
+            context.channels[message.peer.id] = event.channel;
+            event.channel.onmessage = function (evt) {
+                onPeerData(message.peer.id, evt.data);
+            };
+        };
+    }
+
 }
 
 async function createOffer(peerID, peer) {
@@ -94,7 +105,8 @@ async function createOffer(peerID, peer) {
 
 function relay(peerID, event, data){
 	fetch(`/relay/${peerID}/${event}`, {
-		method: POST,
+		// POST wasn't in quotes 
+		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 			'Authorization': `Bearer ${context.token}`
@@ -109,6 +121,7 @@ function peerDataUpdate(peerID, data){
 
 function broadcast(data) {
 	for( let peerID in context.channels) {
+	
 		if( context.channels[peerID].readyState === 'open'){
 			context.channels[peerID].send(data);
 		}
@@ -120,21 +133,22 @@ function removePeer(data){
 	if(context.peers[message.user.id]){
 		context.peers[message.peer.id].close();
 	}
-
 	delete context.peers[message.peer.id];
 }
 
 async function sesssionDescription(data) {
 	let message = JSON.parse(data.data);
-	let peer = context.peers[message.peer.id];
+    let peer = context.peers[message.peer.id];
 
-	let remoteDescription =  new RTCSessionDescription(message.data);
-	await peer.setRemoteDescription(remoteDescription);
-	if(remoteDescription.type === 'offer'){
-		let answer = await peer.createAnswer();
-		await peer.setLocalDescription(answer);
-		await relay(message.peer.id, 'session-description', answer);
-	}
+    let remoteDescription = new RTCSessionDescription(message.data);
+
+    await peer.setRemoteDescription(remoteDescription);
+    if (remoteDescription.type === 'offer') {
+        let answer = await peer.createAnswer();
+        await peer.setLocalDescription(answer);
+        await relay(message.peer.id, 'session-description', answer);
+    }
+
 }
 
 function iceCandidate(data){

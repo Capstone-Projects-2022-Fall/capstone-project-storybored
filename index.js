@@ -3,12 +3,11 @@ var http = require("http");
 var path = require("path");
 var jwt = require("jsonwebtoken");
 var uuid = require("uuid");
-var dotenv = require("dotenv");
-var redis = require("redis");
+var dotenv = require("dotenv").config();
+var redis = require("ioredis");
+
 var bluebird = require("bluebird");
 bluebird.promisifyAll(redis);
-
-dotenv.config();
 
 /**
  * Creates endpoints for HTTP response and requests.
@@ -30,7 +29,9 @@ const connected_clients = {}; //const refernce, mutable array
 /**
  * Client for redis communication
  */
-const redisClient = redis.createClient();
+const redisClient = redis.createClient({
+  
+});
 /**
  * Authenticate JWT for incoming requests
  * @param {request object} req request stream from client
@@ -38,23 +39,27 @@ const redisClient = redis.createClient();
  * @param {function} next function called upon completion of 
  */
 function authenticate(req, res, next) {
+// authenticate calls (first called by join --> get :roomID/join?) would fail because there would be no token in the headers, so 401 status would be returned
+
   let token;
   if (req.headers.authorization) {
     token = req.headers.authorization.split(" ")[1];
   } else if (req.query.token) {
     token = req.query.token;
   }
+
   if (typeof token !== "string") {
     return res.sendStatus(401);
   }
 
   jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
     if (err) {
-      return res.sendStatus(403);
+        return res.sendStatus(403);
     }
-  });
-  req.user = user;
-  next();
+    req.user = user;
+    next();
+});
+  
 }
 
 /**
@@ -63,15 +68,22 @@ function authenticate(req, res, next) {
  */
 async function disconnect(client) {
   delete connected_clients[client.id];
-  await redisClient.delAsync(`messages:${client.id}`);
 
-  let roomIDs = await redisClient.smembersAsync(`${client.id}:channels`);
-  await redisClient.delAsync(`${client.id}:channels`);
+  // Removed Async keyword
+  await redisClient.del(`messages:${client.id}`);
+
+  // Removed Async keyword
+  let roomIDs = await redisClient.smembers(`${client.id}:channels`);
+
+  // Removed Async keyword
+  await redisClient.del(`${client.id}:channels`);
 
   await Promise.all(
     roomIDs.map(async (roomID) => {
-      await redisClient.sremAsync(`channels:${roomId}`, client.id);
-      let peerIDs = await redisClient.smembersAsync(`channels:${roomID}`);
+      // Removed Async keyword
+      await redisClient.srem(`channels:${roomID}`, client.id);
+      // Removed Async keyword
+      let peerIDs = await redisClient.smembers(`channels:${roomID}`);
       let msg = JSON.stringify({
         event: "remove-peer",
         data: { peer: client.user, roomID: roomID },
@@ -110,6 +122,7 @@ app.post("/access", (req, res) => {
     username: req.body.username,
   };
 
+  // 401 error caused by : no .env file with token secret to create a new token below
   const token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: "3600s" });
   return res.json({ token });
 });
@@ -127,7 +140,11 @@ app.get("/connect", authenticate, (req, res) => {
 
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Content-type", "text/event-stream");
-  res.setHeader("Access-Control-Allow-Origin");
+
+  // setHeader needed a second parameter 
+  // res.setHeader("Access-Control-Allow-Origin");
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
   res.flushHeaders();
 
   //setup new client
@@ -143,7 +160,6 @@ app.get("/connect", authenticate, (req, res) => {
   };
 
   //add it to our connected client list until they leave
-
   connected_clients[client.id] = client;
 
   //subscribe to redis events
@@ -167,7 +183,7 @@ app.get("/connect", authenticate, (req, res) => {
  *@param {function} authenticate function used to authenticate JWT
  *@param {HTTP handler function} (req, res) function for processing get HTTP request and response
  */
-app.get("/:roomID", authenticate, (req, res) => {
+app.get("/:roomID",  (req, res) => {
   res.sendFile(path.join(__dirname, "static/index.html"));
 });
 
@@ -177,35 +193,38 @@ app.get("/:roomID", authenticate, (req, res) => {
  * @param {function} authenticate function used to authenticate JWT
  * @param {async HTTP handler function}(req, res) function for processing post HTTP request and response
  */
-app.post("/:roomID/join", authenticate, async (req, res) => {
-  let roomID = req.params.roomID;
+app.post('/:roomId/join', authenticate, async (req, res) => {
+  let roomId = req.params.roomID;
 
-  await redisClient.saddAsync(`${req.user.id}:channels`, roomID);
+  // Removed Async keyword - Aysnc not a recognized function, bluebird not working correctly? or updated document - double check 
+  await redisClient.sadd(`${req.user.id}:channels`, roomId);
 
-  let peerIDs = await redisClient.smembersAsync(`channels:${roomID}`);
-  peerIDs.forEach(peerID => {
-    redisClient.publish(
-      `messages:${peerID}`,
-      JSON.stringify({
-        event: "add-peer",
-        data: { peer: req.user, roomID, offer: false }
+   // Removed Async keyword
+  let peerIds = await redisClient.smembers(`channels:${roomId}`);
+  peerIds.forEach(peerId => {
+      redisClient.publish(`messages:${peerId}`, JSON.stringify({
+          event: 'add-peer',
+          data: {
+              peer: req.user,
+              roomId,
+              offer: false
+          }
       }));
-
-    redisClient.publish(
-      `messages:${req.user.id}`,
-      JSON.stringify({
-        event: "add-peer",
-        data: {
-          peer: { id: peerID },
-          roomID,
-          offer: true,
-        }
-	}));
+      redisClient.publish(`messages:${req.user.id}`, JSON.stringify({
+          event: 'add-peer',
+          data: {
+              peer: { id: peerId },
+              roomId,
+              offer: true
+          }
+      }));
   });
 
-  await redisClient.saddAsync(`channels:${roomID}`, req.user.id);
+   // Removed Async keyword
+  await redisClient.sadd(`channels:${roomId}`, req.user.id);
   return res.sendStatus(200);
 });
+
 
 /**
  * Relays drawdata messages to peers
