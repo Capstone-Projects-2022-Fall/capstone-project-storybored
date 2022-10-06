@@ -1,12 +1,17 @@
 <html>
-<head>
-	<link rel="stylesheet" href="/static/style.css">
-	<link rel="icon" href="/static/favicon.ico">
-	<!-- how the fuck do i stop it from 401ing on favicon call -->
-</head>
-<body>
-	<canvas id="testcanvas" width="2000" height="1000"></canvas>
-	<script type="text/javascript" src="/static/communication.js"></script>
-    <script type="text/javascript" src="/static/drawing.js"></script>
-</body>
+  <head>
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="icon" href="/static/favicon.ico" />
+    <script src="https://unpkg.com/konva@8/konva.js"></script>
+  </head>
+  <body>
+    <select id="tools">
+      <option value="pen">Pen</option>
+      <option value="shape">Shape</option>
+    </select>
+    <div id="container"></div>
+    <!-- <canvas id="testcanvas" width="2000" height="1000"></canvas> -->
+    <script type="text/javascript" src="/static/communication.js"></script>
+    <script type="module" src="/static/drawing.js"></script>
+  </body>
 </html>

@@ -5,7 +5,8 @@ var jwt = require("jsonwebtoken");
 var uuid = require("uuid");
 var dotenv = require("dotenv").config();
 var redis = require("ioredis");
-
+//var Konva = require("Konva");
+//import Konva from "konva";
 var bluebird = require("bluebird");
 bluebird.promisifyAll(redis);
 
@@ -29,17 +30,15 @@ const connected_clients = {}; //const refernce, mutable array
 /**
  * Client for redis communication
  */
-const redisClient = redis.createClient({
-  
-});
+const redisClient = redis.createClient({});
 /**
  * Authenticate JWT for incoming requests
  * @param {request object} req request stream from client
  * @param {response object} res response stream to client
- * @param {function} next function called upon completion of 
+ * @param {function} next function called upon completion of
  */
 function authenticate(req, res, next) {
-// authenticate calls (first called by join --> get :roomID/join?) would fail because there would be no token in the headers, so 401 status would be returned
+  // authenticate calls (first called by join --> get :roomID/join?) would fail because there would be no token in the headers, so 401 status would be returned
 
   let token;
   if (req.headers.authorization) {
@@ -54,12 +53,11 @@ function authenticate(req, res, next) {
 
   jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
     if (err) {
-        return res.sendStatus(403);
+      return res.sendStatus(403);
     }
     req.user = user;
     next();
-});
-  
+  });
 }
 
 /**
@@ -93,7 +91,8 @@ async function disconnect(client) {
           if (peerID !== client.id) {
             await redisClient.publish(`messages:${peerID}`, msg);
           }
-      }));
+        })
+      );
     })
   );
 }
@@ -141,9 +140,9 @@ app.get("/connect", authenticate, (req, res) => {
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Content-type", "text/event-stream");
 
-  // setHeader needed a second parameter 
+  // setHeader needed a second parameter
   // res.setHeader("Access-Control-Allow-Origin");
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader("Access-Control-Allow-Origin", "*");
 
   res.flushHeaders();
 
@@ -183,7 +182,7 @@ app.get("/connect", authenticate, (req, res) => {
  *@param {function} authenticate function used to authenticate JWT
  *@param {HTTP handler function} (req, res) function for processing get HTTP request and response
  */
-app.get("/:roomID",  (req, res) => {
+app.get("/:roomID", (req, res) => {
   res.sendFile(path.join(__dirname, "static/index.html"));
 });
 
@@ -193,38 +192,43 @@ app.get("/:roomID",  (req, res) => {
  * @param {function} authenticate function used to authenticate JWT
  * @param {async HTTP handler function}(req, res) function for processing post HTTP request and response
  */
-app.post('/:roomId/join', authenticate, async (req, res) => {
+app.post("/:roomId/join", authenticate, async (req, res) => {
   let roomId = req.params.roomID;
 
-  // Removed Async keyword - Aysnc not a recognized function, bluebird not working correctly? or updated document - double check 
+  // Removed Async keyword - Aysnc not a recognized function, bluebird not working correctly? or updated document - double check
   await redisClient.sadd(`${req.user.id}:channels`, roomId);
 
-   // Removed Async keyword
+  // Removed Async keyword
   let peerIds = await redisClient.smembers(`channels:${roomId}`);
-  peerIds.forEach(peerId => {
-      redisClient.publish(`messages:${peerId}`, JSON.stringify({
-          event: 'add-peer',
-          data: {
-              peer: req.user,
-              roomId,
-              offer: false
-          }
-      }));
-      redisClient.publish(`messages:${req.user.id}`, JSON.stringify({
-          event: 'add-peer',
-          data: {
-              peer: { id: peerId },
-              roomId,
-              offer: true
-          }
-      }));
+  peerIds.forEach((peerId) => {
+    redisClient.publish(
+      `messages:${peerId}`,
+      JSON.stringify({
+        event: "add-peer",
+        data: {
+          peer: req.user,
+          roomId,
+          offer: false,
+        },
+      })
+    );
+    redisClient.publish(
+      `messages:${req.user.id}`,
+      JSON.stringify({
+        event: "add-peer",
+        data: {
+          peer: { id: peerId },
+          roomId,
+          offer: true,
+        },
+      })
+    );
   });
 
-   // Removed Async keyword
+  // Removed Async keyword
   await redisClient.sadd(`channels:${roomId}`, req.user.id);
   return res.sendStatus(200);
 });
-
 
 /**
  * Relays drawdata messages to peers
@@ -233,14 +237,14 @@ app.post('/:roomId/join', authenticate, async (req, res) => {
  * @param {HTTP handler function}(req, res) function for processing post HTTP request and response
  */
 app.post("/relay/:peerID/:event", authenticate, (req, res) => {
-	let peerID = req.params.peerID;
-	let msg = {
-		event: req.params.event,
-		data:{ peer: req.user , data: req.body}
-	};
+  let peerID = req.params.peerID;
+  let msg = {
+    event: req.params.event,
+    data: { peer: req.user, data: req.body },
+  };
 
-	redisClient.publish(`messages:${peerID}`, JSON.stringify(msg));
-	return res.sendStatus(200);
+  redisClient.publish(`messages:${peerID}`, JSON.stringify(msg));
+  return res.sendStatus(200);
 });
 
 server.listen(process.env.PORT || 7007, () => {
