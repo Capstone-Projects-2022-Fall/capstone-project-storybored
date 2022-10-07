@@ -1,13 +1,13 @@
-// const canvas = document.querySelector("canvas");
-// const ctx = canvas.getContext("2d");
-//var lastPoint;
 //import Konva from "konva";
-//var konva = require("Konva");
-//const Konva = window.konva;
+//var Konva = require("/node_modules/konva/lib/index");
 //import Konva from "konva";
+
+//const { default: Konva } = require("konva");
 
 var height = 600;
 var width = 800;
+var shape_id = 0; //need to map and keep track of these to interact with previously drawn functions.
+var shape_map = new Map();
 function randomColor() {
   let r = Math.random() * 255;
   let g = Math.random() * 255;
@@ -37,12 +37,15 @@ stage.on("mousedown", function (e) {
   let pos = stage.getPointerPosition();
   lastLine = new Konva.Line({
     stroke: color,
+    id: shape_id.toString(),
     strokeWidth: 5,
     lineCap: "round",
     lineJoin: "round",
     points: [pos.x, pos.y, pos.x, pos.y],
   });
-  //broadcast();
+  shape_id++;
+  shape_map.set(lastLine.id, lastLine);
+  broadcast(lastLine.toJSON());
   layer.add(lastLine);
 });
 
@@ -57,6 +60,8 @@ stage.on("mousemove", function (e) {
   const pos = stage.getPointerPosition();
   var newPoints = lastLine.points().concat([pos.x, pos.y]);
   lastLine.points(newPoints);
+  broadcast(lastLine.toJSON());
+  //console.log(lastLine.id());
 });
 // need to experiment to see how this impacts shape placement/hit detection on konva canvas
 // function resize() {
@@ -65,7 +70,34 @@ stage.on("mousemove", function (e) {
 // }
 
 function onPeerData(id, data) {
-  let msg = JSON.parse(data);
+  //   let msg = JSON.parse(data);
+  //console.log(data);
+  //console.log(shape_map.has(data.id));
+  if (shape_map.has(data.id)) {
+    //console.log("made it to if");
+    shape_map.get(data.id).points(data.points);
+    layer.draw();
+  } else {
+    //console.log("made it to else");
+    shape_map.set(
+      data.id,
+      new Konva.Line({
+        stroke: data.colorcolor,
+        id: data.id,
+        strokeWidth: data.strokeWidth,
+        lineCap: data.lineCap,
+        lineJoin: data.lineJoin,
+        points: data.points,
+      })
+    );
+    let cur = shape_map.get(data.id);
+    //console.log(layer);
+    layer.add(cur);
+    //console.log(shape_map);
+    layer.draw();
+    shape_id = data.id + 1;
+  }
+  //   if(shape_map.has())
   //   if (msg.event === "draw") {
   //     draw(msg);
   //   } else if (msg.event === "drawRect") {
@@ -113,12 +145,8 @@ function onPeerData(id, data) {
 //   }
 // }
 
-// function up() {
-//   lastPoint = undefined;
-// }
-
-// window.onmousemove = move;
-
-// window.onresize = resize;
-
-// window.onmouseup = up;
+function logContents() {
+  console.log(stage);
+  console.log(layer);
+  console.log(shape_map);
+}

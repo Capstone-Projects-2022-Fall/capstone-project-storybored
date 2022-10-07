@@ -5,7 +5,7 @@ var jwt = require("jsonwebtoken");
 var uuid = require("uuid");
 var dotenv = require("dotenv").config();
 var redis = require("ioredis");
-//var Konva = require("Konva");
+var Konva = require("konva"); //this path is wrong how to fix? need to for final implementation
 //import Konva from "konva";
 var bluebird = require("bluebird");
 bluebird.promisifyAll(redis);
