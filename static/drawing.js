@@ -37,13 +37,13 @@ stage.on("mousedown", function (e) {
   let pos = stage.getPointerPosition();
   lastLine = new Konva.Line({
     stroke: color,
-    id: shape_id.toString(),
+    id: shape_id,
     strokeWidth: 5,
     lineCap: "round",
     lineJoin: "round",
     points: [pos.x, pos.y, pos.x, pos.y],
   });
-  shape_id++;
+  shape_id = shape_id + 1;
   shape_map.set(lastLine.id, lastLine);
   broadcast(lastLine.toJSON());
   layer.add(lastLine);
@@ -63,48 +63,29 @@ stage.on("mousemove", function (e) {
   broadcast(lastLine.toJSON());
   //console.log(lastLine.id());
 });
-// need to experiment to see how this impacts shape placement/hit detection on konva canvas
-// function resize() {
-//   canvas.width = window.innerWidth;
-//   canvas.height = window.innerHeight;
-// }
 
 function onPeerData(id, data) {
-  //   let msg = JSON.parse(data);
-  //console.log(data);
+  let msg = JSON.parse(data);
+  console.log(msg);
   //console.log(shape_map.has(data.id));
   if (shape_map.has(data.id)) {
     //console.log("made it to if");
-    shape_map.get(data.id).points(data.points);
+    console.log(shape_map.get(data.id));
     layer.draw();
   } else {
     //console.log("made it to else");
-    shape_map.set(
-      data.id,
-      new Konva.Line({
-        stroke: data.colorcolor,
-        id: data.id,
-        strokeWidth: data.strokeWidth,
-        lineCap: data.lineCap,
-        lineJoin: data.lineJoin,
-        points: data.points,
-      })
-    );
-    let cur = shape_map.get(data.id);
-    //console.log(layer);
+    shape_map.set(data.id, msg);
+    let cur = Konva.Node.create(msg);
     layer.add(cur);
-    //console.log(shape_map);
     layer.draw();
-    shape_id = data.id + 1;
+    shape_id = msg.id + 1;
   }
-  //   if(shape_map.has())
-  //   if (msg.event === "draw") {
-  //     draw(msg);
-  //   } else if (msg.event === "drawRect") {
-  //     drawRect(msg);
-  //   } else if (msg.event === "clear") {
-  //     ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //   }
+}
+
+function logContents() {
+  console.log(stage);
+  console.log(layer);
+  console.log(shape_map);
 }
 
 // function draw(data) {
@@ -145,8 +126,8 @@ function onPeerData(id, data) {
 //   }
 // }
 
-function logContents() {
-  console.log(stage);
-  console.log(layer);
-  console.log(shape_map);
-}
+// need to experiment to see how this impacts shape placement/hit detection on konva canvas
+// function resize() {
+//   canvas.width = window.innerWidth;
+//   canvas.height = window.innerHeight;
+// }
