@@ -6,7 +6,6 @@
 
 var height = 600;
 var width = 800;
-var shape_id = 0; //need to map and keep track of these to interact with previously drawn functions.
 var shape_map = new Map();
 function randomColor() {
   let r = Math.random() * 255;
@@ -14,6 +13,11 @@ function randomColor() {
   let b = Math.random() * 255;
   return `rgb(${r}, ${g}, ${b})`;
   //return `rgb(${0}, ${0}, ${0})`;
+}
+
+function generateId() {
+  const result = Math.random().toString(36).substring(2, 9);
+  return result;
 }
 
 //set up the konva stage
@@ -35,15 +39,15 @@ var lastLine;
 stage.on("mousedown", function (e) {
   isPaint = true;
   let pos = stage.getPointerPosition();
+  const tempID = generateId();
   lastLine = new Konva.Line({
     stroke: color,
-    id: shape_id,
+    id: tempID,
     strokeWidth: 5,
     lineCap: "round",
     lineJoin: "round",
     points: [pos.x, pos.y, pos.x, pos.y],
   });
-  shape_id = shape_id + 1;
   shape_map.set(lastLine.id, lastLine);
   broadcast(lastLine.toJSON());
   layer.add(lastLine);
@@ -66,19 +70,22 @@ stage.on("mousemove", function (e) {
 
 function onPeerData(id, data) {
   let msg = JSON.parse(data);
-  console.log(msg);
-  //console.log(shape_map.has(data.id));
-  if (shape_map.has(data.id)) {
-    //console.log("made it to if");
-    console.log(shape_map.get(data.id));
+  //console.log(msg.attrs.id);
+  //console.log(msg);
+  //console.log(shape_map.has(msg.attrs.id));
+  if (shape_map.has(msg.attrs.id)) {
+    let cur = layer.getChildren(function (node) {
+      if (node.getId() === msg.attrs.id) {
+        node.setAttr("points", msg.attrs.points);
+      }
+    });
     layer.draw();
   } else {
-    //console.log("made it to else");
-    shape_map.set(data.id, msg);
+    //  console.log(msg.attrs.id);
+    shape_map.set(msg.attrs.id, msg);
     let cur = Konva.Node.create(msg);
     layer.add(cur);
     layer.draw();
-    shape_id = msg.id + 1;
   }
 }
 

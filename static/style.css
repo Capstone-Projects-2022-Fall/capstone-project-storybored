@@ -1,12 +1,12 @@
-body{
-	background: #111;
-	color: #f8f8f8;
+body {
+  background: #f8f8f8;
+  color: #f8f8f8;
 }
 
-canvas{
-	background: #cec9c4;
-	padding: 0;
-	margin: 0 auto;
-	margin-bottom: 1rem;
-	display: block;
+canvas {
+  background: #cec9c4;
+  padding: 0;
+  margin: 0 auto;
+  margin-bottom: 1rem;
+  display: block;
 }
