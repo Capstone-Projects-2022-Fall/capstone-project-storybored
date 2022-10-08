@@ -38,7 +38,7 @@ const redisClient = redis.createClient({});
  * @param {function} next function called upon completion of
  */
 function authenticate(req, res, next) {
-  // authenticate calls (first called by join --> get :roomID/join?) would fail because there would be no token in the headers, so 401 status would be returned
+  // authenticate calls (first called by join --> get :roomId/join?) would fail because there would be no token in the headers, so 401 status would be returned
 
   let token;
   if (req.headers.authorization) {
@@ -71,20 +71,20 @@ async function disconnect(client) {
   await redisClient.del(`messages:${client.id}`);
 
   // Removed Async keyword
-  let roomIDs = await redisClient.smembers(`${client.id}:channels`);
+  let roomIds = await redisClient.smembers(`${client.id}:channels`);
 
   // Removed Async keyword
   await redisClient.del(`${client.id}:channels`);
 
   await Promise.all(
-    roomIDs.map(async (roomID) => {
+    roomIds.map(async (roomId) => {
       // Removed Async keyword
-      await redisClient.srem(`channels:${roomID}`, client.id);
+      await redisClient.srem(`channels:${roomId}`, client.id);
       // Removed Async keyword
-      let peerIDs = await redisClient.smembers(`channels:${roomID}`);
+      let peerIDs = await redisClient.smembers(`channels:${roomId}`);
       let msg = JSON.stringify({
         event: "remove-peer",
-        data: { peer: client.user, roomID: roomID },
+        data: { peer: client.user, roomId: roomId },
       });
       await Promise.all(
         peerIDs.map(async (peerID) => {
@@ -178,22 +178,22 @@ app.get("/connect", authenticate, (req, res) => {
 
 /**
  *Directs a client to a unique room
- *@param {PATH} '/:roomID' endpoint for API call
+ *@param {PATH} '/:roomId' endpoint for API call
  *@param {function} authenticate function used to authenticate JWT
  *@param {HTTP handler function} (req, res) function for processing get HTTP request and response
  */
-app.get("/:roomID", (req, res) => {
+app.get("/:roomId", (req, res) => {
   res.sendFile(path.join(__dirname, "static/index.html"));
 });
 
 /**
  * Communicates to all connected clients that a new user has joined, generates an offer to setup peer connections
- * @param {PATH} '/:roomID/join' endpoint for API call
+ * @param {PATH} '/:roomId/join' endpoint for API call
  * @param {function} authenticate function used to authenticate JWT
  * @param {async HTTP handler function}(req, res) function for processing post HTTP request and response
  */
 app.post("/:roomId/join", authenticate, async (req, res) => {
-  let roomId = req.params.roomID;
+  let roomId = req.params.roomId;
 
   // Removed Async keyword - Aysnc not a recognized function, bluebird not working correctly? or updated document - double check
   await redisClient.sadd(`${req.user.id}:channels`, roomId);
