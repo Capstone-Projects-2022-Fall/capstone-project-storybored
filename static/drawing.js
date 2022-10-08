@@ -48,6 +48,16 @@ function makeLine() {
     lineCap: "round",
     lineJoin: "round",
     points: [pos.x, pos.y, pos.x, pos.y],
+    draggable: true,
+  });
+  new_line.on("dragstart", function () {
+    broadcast(new_line.toJSON());
+  });
+  new_line.on("dragmove", function () {
+    broadcast(new_line.toJSON());
+  });
+  new_line.on("dragend", function () {
+    broadcast(new_line.toJSON());
   });
   return new_line;
 }
@@ -67,6 +77,16 @@ function makeRect() {
     fill: randomColor(),
     stroke: randomColor(),
     strokeWidth: 4,
+    draggable: true,
+  });
+  new_rect.on("dragstart", function () {
+    broadcast(new_rect.toJSON());
+  });
+  new_rect.on("dragmove", function () {
+    broadcast(new_rect.toJSON());
+  });
+  new_rect.on("dragend", function () {
+    broadcast(new_rect.toJSON());
   });
   return new_rect;
 }
@@ -87,17 +107,32 @@ var color = randomColor();
 var isPaint = false;
 var lastShape;
 
+function makeDraggable() {
+  layer.getChildren(function (node) {
+    node.setAttr("draggable", true);
+  });
+}
+
+function makeUnDraggable() {
+  layer.getChildren(function (node) {
+    node.setAttr("draggable", false);
+  });
+}
+
 stage.on("mousedown", function (e) {
+  if (tool == "select") {
+    makeDraggable();
+  }
   isPaint = true;
   let pos = stage.getPointerPosition();
   //need to abstract this for different tools
   if (drawing_map.has(tool)) {
+    makeUnDraggable();
     lastShape = drawing_map.get(tool)();
-    // console.log(lastShape);
+    shape_map.set(lastShape.id, lastShape);
+    broadcast(lastShape.toJSON());
+    layer.add(lastShape);
   }
-  shape_map.set(lastShape.id, lastShape);
-  broadcast(lastShape.toJSON());
-  layer.add(lastShape);
 });
 
 stage.on("mouseup", function (e) {
@@ -109,6 +144,9 @@ stage.on("mouseup", function (e) {
 stage.on("mousemove", function (e) {
   if (!isPaint || tool != "pen") {
     return;
+  }
+  if (tool != "select") {
+    makeUnDraggable();
   }
   const pos = stage.getPointerPosition();
   var newPoints = lastShape.points().concat([pos.x, pos.y]);
