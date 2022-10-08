@@ -1,6 +1,6 @@
 // const { application } = require("express");
 // const { cloneElement } = require("react");
-
+//https://bugs.chromium.org/p/chromium/issues/detail?id=825576#c40
 var context = {
   username: "user" + parseInt(Math.random() * 100000),
   roomID: window.location.pathname.substr(1),
