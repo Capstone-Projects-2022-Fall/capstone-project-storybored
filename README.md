@@ -22,7 +22,6 @@ This project requires a knowledge of JavaScript and server implementation. Becau
 
 
 ## To Run:
-
 - Build docker image for storybored (Make sure to run in the root folder where Dockerfile is):
 ```docker build -t storybored-app:0.1 .```
 
