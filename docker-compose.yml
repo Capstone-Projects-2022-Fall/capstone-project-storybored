@@ -1,5 +1,5 @@
 
-version: '0.1'
+version: '1'
 services:
   storybored:
     image: "storybored-app:0.1"
