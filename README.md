@@ -20,3 +20,10 @@ There are many different personal drawing/painting/editing applications for user
 Required Resources
 This project requires a knowledge of JavaScript and server implementation. Because this is a drawing and animation focused project, some knowledge or skills in art are recommended however they are not required.
 
+
+## To Run:
+- Build docker image for storybored (Make sure to run in the root folder where Dockerfile is):
+```docker build -t storybored-app:0.1 .```
+
+- Docker compose redis and storybored containers
+```docker-compose up```
