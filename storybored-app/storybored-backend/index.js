@@ -95,8 +95,6 @@ function authenticate(req, res, next) {
 }
 
 
-
-
 /**
  * Sets up a new client and adds them to the list of connected clients. Adds clients to list of redis subscribers
  * @param {PATH} '/connect' endpoint for API call
@@ -109,7 +107,6 @@ function authenticate(req, res, next) {
   if (req.headers.accept !== "text/event-stream") {
     return res.sendStatus(404);
   }
-  console.log("/CONNECT")
 
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Content-type", "text/event-stream");
@@ -131,7 +128,6 @@ function authenticate(req, res, next) {
       res.write(`data: ${JSON.stringify(data)}\n\n`);
     },
   };
-  // console.log(client)
 
   //add it to our connected client list until they leave
   connected_clients[client.id] = client;
@@ -148,7 +144,6 @@ function authenticate(req, res, next) {
 
   req.on("close", () => {
     disconnect(client);
-    console.log("clsoing")
   });
 });
 
@@ -161,8 +156,6 @@ function authenticate(req, res, next) {
  */
  app.post("/:roomId/join", authenticate, async (req, res) => {
   let roomId = req.params.roomId;
-
-  console.log("/ROOMID/JOIN...")
 
   // Removed Async keyword - Aysnc not a recognized function, bluebird not working correctly? or updated document - double check
   await redisClient.sadd(`${req.user.id}:channels`, roomId);

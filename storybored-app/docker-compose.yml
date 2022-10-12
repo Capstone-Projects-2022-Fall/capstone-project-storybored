@@ -1,0 +1,16 @@
+
+version: '1'
+services:
+  storyboredFront:
+    image: "storybored-frontend:0.1"
+    ports:
+      - "3000:3000"
+  storyboredBack:
+    image: "storybored-backend:0.1"
+    ports:
+      - "7007:7007"
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+  
