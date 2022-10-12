@@ -78,8 +78,8 @@ function authenticate(req, res, next) {
   else if (req.headers){
     token = req.headers.authorization.split(" ")[1];
   }
-  console.log(req)
-  console.log("token", req.query.token, req.body.headers)
+  // console.log(req)
+  // console.log("token", req.query.token, req.body.headers)
 
   if (typeof token !== "string") {
     return res.sendStatus(401);

@@ -4,9 +4,11 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import axios from 'axios'
-import {onPeerData} from './App.js'
 
-
+const onPeerData = (id, data) => {
+    let msg = JSON.parse(data);
+    console.log(id,msg, "receiving")
+}
 
 var context = {
   username: "user" + parseInt(Math.random() * 100000),
@@ -161,6 +163,7 @@ function iceCandidate(data) {
 }
 
 function broadcast(data) {
+
   console.log("BROADCASTING", data)
   for (let peerId in context.channels) {
       if (context.channels[peerId].readyState === 'open') {

@@ -5,16 +5,8 @@ import { Stage, Layer, Line, Text } from 'react-konva';
 
 
 
-export const onPeerData = (id, data) => {
-    // let msg = JSON.parse(data);
-    console.log(id,data, "receiving")
-    // if (msg.event === 'draw') {
-    //     draw(msg);
-    // } else if (msg.event === 'drawRect') {
-    //     drawRect(msg);
-    // } else if (msg.event === 'clear') {
-    //     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // }
+const onPeerTest = () =>{
+    console.log("I can be called")
 }
 
 const Canvas = (props) => {
@@ -22,13 +14,20 @@ const Canvas = (props) => {
     const [tool, setTool] = React.useState('pen');
     const [lines, setLines] = React.useState([]);
     const isDrawing = React.useRef(false);
+
+    const onPeerData = (id, data) => {
+            let msg = JSON.parse(data);
+            console.log(id,data, "receiving")
+            setLines(lines.concat(msg))
+    }
+
     
     const handleMouseDown = (e) => {
         isDrawing.current = true;
         const pos = e.target.getStage().getPointerPosition();
         
         setLines([...lines, { tool, points: [pos.x, pos.y] }]);
-        props.broadcast([...lines, { tool, points: [pos.x, pos.y] }]);
+        props.broadcast(JSON.stringify([...lines, { tool, points: [pos.x, pos.y] }]));
     };
 
     const handleMouseMove = (e) => {
@@ -46,7 +45,7 @@ const Canvas = (props) => {
         lines.splice(lines.length - 1, 1, lastLine);
         
         setLines(lines.concat());
-        props.broadcast(lines.concat());
+        props.broadcast(JSON.stringify(lines.concat()));
     };
 
     const handleMouseUp = () => {
