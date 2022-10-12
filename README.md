@@ -27,3 +27,13 @@ This project requires a knowledge of JavaScript and server implementation. Becau
 
 - Docker compose redis and storybored containers
 ```docker-compose up```
+
+
+
+## To Run React App:
+- In 'storybored-backend' run ```npm start``` --> Host on localhost:7007
+
+- In 'storybored-frontend' run ```npm start``` --> Host on localhost:3000
+
+- Make sure redis server is running
+
