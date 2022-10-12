@@ -5,10 +5,23 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import axios from 'axios'
 
-const onPeerData = (id, data) => {
-    let msg = JSON.parse(data);
-    console.log(id,msg, "receiving")
-}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+
+
+
+// const onPeerData = (id, data) => {
+//   // let msg = JSON.parse(data);
+//   console.log(id,data, "receiving")
+//   // if (msg.event === 'draw') {
+//   //     draw(msg);
+//   // } else if (msg.event === 'drawRect') {
+//   //     drawRect(msg);
+//   // } else if (msg.event === 'clear') {
+//   //     ctx.clearRect(0, 0, canvas.width, canvas.height);
+//   // }
+// }
 
 var context = {
   username: "user" + parseInt(Math.random() * 100000),
@@ -19,13 +32,13 @@ var context = {
   channels: {},
 }
 
-const rtcConfig = {
-  iceServers: [
-    {
-      urls: ["stun:stun.l.google.com:19302", "stun:global.stun.twilio.com:3478"],
-    },
-  ],
-};
+// const rtcConfig = {
+//   iceServers: [
+//     {
+//       urls: ["stun:stun.l.google.com:19302", "stun:global.stun.twilio.com:3478"],
+//     },
+//   ],
+// };
 
 async function getToken() {
   let data = {
@@ -51,15 +64,19 @@ async function connect(token) {
   console.log(context.token)
   context.eventSource = new EventSource(`http://localhost:7007/connect?token=${token}`);
 
-  context.eventSource.addEventListener("add-peer", addPeer, false);
-  context.eventSource.addEventListener("remove-peer", removePeer, false);
-  context.eventSource.addEventListener("session-description", sesssionDescription, false);
-  context.eventSource.addEventListener("ice-candidate", iceCandidate, false);
+ 
   context.eventSource.addEventListener("connected", (user) => {
     console.log("CONNECTED")
     context.user = user;
     console.log("RESULT", join(token));
   });
+
+
+  root.render(
+    <React.StrictMode>
+      <App context={context}/>
+    </React.StrictMode>
+  );
 }
 
 
@@ -75,115 +92,112 @@ async function join(token) {
   })
 }
 
-function addPeer(data) {
-  let message = JSON.parse(data.data);
-  if (context.peers[message.peer.id]) {
-    return;
-  }
+// function onPeerData(id, data) {
+//   let msg = JSON.parse(data);
+// }
 
-  let peer = new RTCPeerConnection(rtcConfig);
 
-  // was missing this line - need to add new peer to peers list
-  context.peers[message.peer.id] = peer;
+// function addPeer(data) {
+//   let message = JSON.parse(data.data);
+//   if (context.peers[message.peer.id]) {
+//     return;
+//   }
 
-  peer.onicecandidate = function (event) {
-    if (event.candidate) {
-      // was missing second parameter 'ice-candidate' in relay function
-      relay(message.peer.id, "ice-candidate", event.candidate);
-    }
-  };
+//   let peer = new RTCPeerConnection(rtcConfig);
 
-  if (message.offer) {
-    // create the data channel, map peer updates
-    let channel = peer.createDataChannel("updates");
-    channel.onmessage = function (event) {
-      onPeerData(message.peer.id, event.data);
-    };
-    context.channels[message.peer.id] = channel;
-    createOffer(message.peer.id, peer);
-  } else {
-    peer.ondatachannel = function (event) {
-      context.channels[message.peer.id] = event.channel;
-      event.channel.onmessage = function (evt) {
-        onPeerData(message.peer.id, evt.data);
-      };
-    };
-  }
-}
+//   // was missing this line - need to add new peer to peers list
+//   context.peers[message.peer.id] = peer;
 
-async function createOffer(peerID, peer) {
-  let offer = await peer.createOffer();
-  await peer.setLocalDescription(offer);
-  await relay(peerID, "session-description", offer);
-}
+//   peer.onicecandidate = function (event) {
+//     if (event.candidate) {
+//       // was missing second parameter 'ice-candidate' in relay function
+//       relay(message.peer.id, "ice-candidate", event.candidate);
+//     }
+//   };
 
-function relay(peerID, event, data) {
-  console.log("relaying....", context.token)
+//   if (message.offer) {
+//     // create the data channel, map peer updates
+//     let channel = peer.createDataChannel("updates");
+//     channel.onmessage = function (event) {
+//       onPeerData(message.peer.id, event.data);
+//     };
+//     context.channels[message.peer.id] = channel;
+//     createOffer(message.peer.id, peer);
+//   } else {
+//     peer.ondatachannel = function (event) {
+//       context.channels[message.peer.id] = event.channel;
+//       event.channel.onmessage = function (evt) {
+//         onPeerData(message.peer.id, evt.data);
+//       };
+//     };
+//   }
+// }
 
-  axios.post(`http://localhost:7007/relay/${peerID}/${event}`, data, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${context.token}`,
-    }
-  })
+// async function createOffer(peerID, peer) {
+//   let offer = await peer.createOffer();
+//   await peer.setLocalDescription(offer);
+//   await relay(peerID, "session-description", offer);
+// }
+
+// function relay(peerID, event, data) {
+//   console.log("relaying....", context.token)
+
+//   axios.post(`http://localhost:7007/relay/${peerID}/${event}`, data, {
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: `Bearer ${context.token}`,
+//     }
+//   })
   
-}
+// }
 
-function peerDataUpdate(peerID, data) {
-  onPeerData(peerID, data);
-}
+// function peerDataUpdate(peerID, data) {
+//   onPeerData(peerID, data);
+// }
 
-function removePeer(data) {
-  let message = JSON.parse(data.data);
-  // should've been peer.id not user.id 
-  if (context.peers[message.peer.id]) {
-    context.peers[message.peer.id].close();
-  }
-  delete context.peers[message.peer.id];
-}
+// function removePeer(data) {
+//   let message = JSON.parse(data.data);
+//   // should've been peer.id not user.id 
+//   if (context.peers[message.peer.id]) {
+//     context.peers[message.peer.id].close();
+//   }
+//   delete context.peers[message.peer.id];
+// }
 
-async function sesssionDescription(data) {
-  let message = JSON.parse(data.data);
-  let peer = context.peers[message.peer.id];
+// async function sesssionDescription(data) {
+//   let message = JSON.parse(data.data);
+//   let peer = context.peers[message.peer.id];
 
-  let remoteDescription = new RTCSessionDescription(message.data);
+//   let remoteDescription = new RTCSessionDescription(message.data);
 
-  await peer.setRemoteDescription(remoteDescription);
-  if (remoteDescription.type === "offer") {
-    let answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
-    await relay(message.peer.id, "session-description", answer);
-  }
-}
+//   await peer.setRemoteDescription(remoteDescription);
+//   if (remoteDescription.type === "offer") {
+//     let answer = await peer.createAnswer();
+//     await peer.setLocalDescription(answer);
+//     await relay(message.peer.id, "session-description", answer);
+//   }
+// }
 
-function iceCandidate(data) {
-  let message = JSON.parse(data.data);
-  let peer = context.peers[message.peer.id];
-  peer.addIceCandidate(new RTCIceCandidate(message.data));
-}
+// function iceCandidate(data) {
+//   let message = JSON.parse(data.data);
+//   let peer = context.peers[message.peer.id];
+//   peer.addIceCandidate(new RTCIceCandidate(message.data));
+// }
 
-function broadcast(data) {
+// function broadcast(data) {
+//   console.log("BROADCASTING", data)
+//   for (let peerId in context.channels) {
+//       if (context.channels[peerId].readyState === 'open') {
+//           context.channels[peerId].send(data);
+//       }
+//   }
+// }
 
-  console.log("BROADCASTING", data)
-  for (let peerId in context.channels) {
-      if (context.channels[peerId].readyState === 'open') {
-          context.channels[peerId].send(data);
-      }
-  }
-}
 
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
 getToken();
-
-
-root.render(
-  <React.StrictMode>
-    <App broadcast={broadcast}/>
-  </React.StrictMode>
-);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+
