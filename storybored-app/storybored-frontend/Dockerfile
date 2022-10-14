@@ -14,7 +14,7 @@ EXPOSE 3000
 RUN npm install
 
 # Run app.js using node when the container launches
-CMD ["npm", "start"]
+CMD ["npm", "run", "build"]
 
 
 

@@ -8,8 +8,10 @@ import axios from 'axios';
 
 
 const App = ({ context }) => {
+    
 
     const [lines, setLines] = useState([]);
+    const [tool, setTool] = useState('pen');
  
     const rtcConfig = {
         iceServers: [
@@ -125,7 +127,15 @@ const App = ({ context }) => {
 
     return (
         <div>
-            <Canvas broadcast={broadcast} lines={lines} setLines={setLines}/>
+            <select
+                value={tool}
+                onChange={(e) => {
+                    setTool(e.target.value);
+                }}>
+                <option value="pen">Pen</option>
+                <option value="eraser">Eraser</option>
+            </select>
+            <Canvas broadcast={broadcast} lines={lines} setLines={setLines} tool={tool}/>
         </div>
     )
 }

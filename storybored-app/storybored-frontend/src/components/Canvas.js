@@ -3,17 +3,19 @@ import React, { useState, useRef } from 'react'
 
 import { Stage, Layer, Line, Text } from 'react-konva';
 
-const Canvas = ({broadcast, lines, setLines}) => {
+const Canvas = ({broadcast, lines, setLines, tool,}) => {
 
-    const [tool, setTool] = useState('pen');
+    
     const isDrawing = useRef(false);
 
     const handleMouseDown = (e) => {
         isDrawing.current = true;
-        const pos = e.target.getStage().getPointerPosition();
+        // const pos = e.target.getStage().getPointerPosition();
+        const pos = e.evt
 
-        setLines([...lines, { tool, points: [pos.x, pos.y] }]);
-        broadcast(JSON.stringify([...lines, { tool, points: [pos.x, pos.y] }]));
+        // setLines([...lines, { tool, points: [pos.x, pos.y] }]);
+        setLines([...lines, { tool, points: [ pos.offsetX, pos.offsetY ] }]);
+        console.log("lines:", lines, "position of current Mouse, ", e)
     };
 
     const handleMouseMove = (e) => {
@@ -21,11 +23,14 @@ const Canvas = ({broadcast, lines, setLines}) => {
         if (!isDrawing.current) {
             return;
         }
-        const stage = e.target.getStage();
-        const point = stage.getPointerPosition();
+        // const stage = e.target.getStage();
+        // const point = stage.getPointerPosition();
+        const point = e.evt
+
         let lastLine = lines[lines.length - 1];
+
         // add point
-        lastLine.points = lastLine.points.concat([point.x, point.y]);
+        lastLine.points = lastLine.points.concat([ point.offsetX, point.offsetY ]);
 
         // replace last
         lines.splice(lines.length - 1, 1, lastLine);
@@ -66,15 +71,7 @@ const Canvas = ({broadcast, lines, setLines}) => {
                     ))}
                 </Layer>
             </Stage>
-            <select
-                value={tool}
-                onChange={(e) => {
-                    setTool(e.target.value);
-                }}
-            >
-                <option value="pen">Pen</option>
-                <option value="eraser">Eraser</option>
-            </select>
+            
         </div>
     );
 };
