@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react'
 
 import { Stage, Layer, Line, Text } from 'react-konva';
 
-const Canvas = ({broadcast, lines, setLines, tool,}) => {
+const Canvas = ({broadcast, lines, setLines, tool}) => {
 
     
     const isDrawing = useRef(false);
