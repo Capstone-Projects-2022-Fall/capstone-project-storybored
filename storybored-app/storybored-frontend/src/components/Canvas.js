@@ -28,7 +28,7 @@ const Canvas = ({broadcast, lines, setLines, tool, user}) => {
         const point = e.evt
 
         // let lastLine = lines[lines.length - 1];
-        let lastLine = lines.findLast(element => element.user==user)
+        let lastLine = lines.findLast(element => element.user===user)
 
         // add point
         lastLine.points = lastLine.points.concat([ point.offsetX, point.offsetY ]);

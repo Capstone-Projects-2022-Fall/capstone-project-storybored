@@ -11,10 +11,10 @@ ADD . /frontend
 EXPOSE 3000
 
 # 
-RUN npm install
+# RUN npm install
 
 # Run app.js using node when the container launches
-CMD ["npm", "run", "build"]
+# CMD ["npm", "run", "build"]
 
-
+CMD ["npm", "start"]
 
