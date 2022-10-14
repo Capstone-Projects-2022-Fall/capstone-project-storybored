@@ -6,6 +6,8 @@ import reportWebVitals from './reportWebVitals';
 import axios from 'axios'
 
 
+const address = '10.142.0.2'
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 async function getToken() {
@@ -13,7 +15,7 @@ async function getToken() {
     username: "user" + parseInt(Math.random() * 100000),
   }
 
-  axios.post('http://localhost:7007/access', data, {
+  axios.post(`http://${address}:7007/access`, data, {
     headers: {
       "Content-Type": "application/json",
     },
@@ -32,7 +34,7 @@ async function connect(token, username) {
     channels: {},
   }
 
-  context.eventSource = new EventSource(`http://localhost:7007/connect?token=${token}`);
+  context.eventSource = new EventSource(`http://${address}:7007/connect?token=${token}`);
 
   context.eventSource.addEventListener("connected", (user) => {
     context.user = user;
@@ -47,7 +49,7 @@ async function connect(token, username) {
 }
 
 async function join(token, roomID) {
-  return axios.post(`http://localhost:7007/${roomID}/join`, {
+  return axios.post(`http://${address}:7007/${roomID}/join`, {
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}`,

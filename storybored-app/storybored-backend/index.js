@@ -10,72 +10,62 @@ var cors = require('cors')
 bluebird.promisifyAll(redis);
 
 
-
-
-
-
-
 /**
  * Creates endpoints for HTTP response and requests.
  */
- const app = express();
+const app = express();
 //  app.use("/static", express.static(`${__dirname}/static`));
- app.use(express.json());
- app.use(cors())
- app.locals.index = 1000000000;
- 
- /**
-  * Used to listen for API calls on selected port
-  */
- const server = http.createServer(app);
+app.use(express.json());
+app.use(cors())
+app.locals.index = 1000000000;
 
+/**
+ * Used to listen for API calls on selected port
+ */
+const server = http.createServer(app);
+
+let address = '10.142.0.2'
+// let address = 'localhost'
 
 /**
  * internal list of connected clients
  */
  const connected_clients = {}; //const refernce, mutable array
- /**
-  * Client for redis communication
-  */
- const redisClient = redis.createClient({port:6379});
-
-
-
+/**
+ * Client for redis communication
+ */
+const redisClient = redis.createClient({ host: address, port: 6379 });
 
 /**
  * retrieves the index given to the user
  * @param {PATH} '/' endpoint for API call
  * @param {HTTP handler function} (req, res) function for processing get HTTP request and response
  */
- app.get("/", (req, res) => {
+app.get("/", (req, res) => {
   let id = (app.locals.index++).toString(36);
   res.redirect(`/${id}`);
 });
 
 
 
-
-
-
-
- /**
- * Authenticate JWT for incoming requests
- * @param {request object} req request stream from client
- * @param {response object} res response stream to client
- * @param {function} next function called upon completion of
- */
+/**
+* Authenticate JWT for incoming requests
+* @param {request object} req request stream from client
+* @param {response object} res response stream to client
+* @param {function} next function called upon completion of
+*/
 function authenticate(req, res, next) {
   // authenticate calls (first called by join --> get :roomId/join?) would fail because there would be no token in the headers, so 401 status would be returned
 
   let token;
-  
+
   if (req.query.token) {
     token = req.query.token;
   }
   else if (req.body.headers) {
     token = req.body.headers.Authorization.split(" ")[1];
   }
-  else if (req.headers){
+  else if (req.headers) {
     token = req.headers.authorization.split(" ")[1];
   }
   // console.log(req)
@@ -101,9 +91,9 @@ function authenticate(req, res, next) {
  * @param {function} authenticate function used to authenticate JWT
  * @param {HTTP handler function} (req, res) function for processing get HTTP request and response
  */
- app.get("/connect", authenticate, (req, res) => {
+app.get("/connect", authenticate, (req, res) => {
 
-  
+
   if (req.headers.accept !== "text/event-stream") {
     return res.sendStatus(404);
   }
@@ -121,7 +111,7 @@ function authenticate(req, res, next) {
   let client = {
     id: req.user.id,
     user: req.user,
-    redis: redis.createClient({port:6379}),
+    redis: redis.createClient({ host: address, port: 6379 }),
     emit: (event, data) => {
       res.write(`id: ${uuid.v4()}\n`);
       res.write(`event: ${event}\n`);
@@ -154,7 +144,7 @@ function authenticate(req, res, next) {
  * @param {function} authenticate function used to authenticate JWT
  * @param {async HTTP handler function}(req, res) function for processing post HTTP request and response
  */
- app.post("/:roomId/join", authenticate, async (req, res) => {
+app.post("/:roomId/join", authenticate, async (req, res) => {
   let roomId = req.params.roomId;
 
   // Removed Async keyword - Aysnc not a recognized function, bluebird not working correctly? or updated document - double check
@@ -203,24 +193,24 @@ function authenticate(req, res, next) {
  * @param {HTTP handler function} (req, res) function for processing post HTTP request and response
  */
 app.post("/access", (req, res) => {
-  
-    if (!req.body.username) {
-      return res.sendStatus(403);
-    }
-    const user = {
-      id: uuid.v4(),
-      username: req.body.username,
-    };
-  
-    // 401 error caused by : no .env file with token secret to create a new token below
-    const token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: "3600s" });
-    return res.json({ token });
+
+  if (!req.body.username) {
+    return res.sendStatus(403);
+  }
+  const user = {
+    id: uuid.v4(),
+    username: req.body.username,
+  };
+
+  // 401 error caused by : no .env file with token secret to create a new token below
+  const token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: "3600s" });
+  return res.json({ token });
 });
 
 server.listen(process.env.PORT || 7007, () => {
-    console.log(`started server on port ${server.address().port}`);
+  console.log(`started server on port ${server.address().port}`);
 });
-  
+
 
 
 
@@ -229,7 +219,7 @@ server.listen(process.env.PORT || 7007, () => {
  * Remove a client from the connection list. Updates all connected peers
  * @param {client object} client containing a UUID
  */
- async function disconnect(client) {
+async function disconnect(client) {
   delete connected_clients[client.id];
 
   // Removed Async keyword
@@ -268,7 +258,7 @@ server.listen(process.env.PORT || 7007, () => {
  * Remove a client from the connection list. Updates all connected peers
  * @param {client object} client containing a UUID
  */
- async function disconnect(client) {
+async function disconnect(client) {
   delete connected_clients[client.id];
 
   // Removed Async keyword
@@ -309,7 +299,7 @@ server.listen(process.env.PORT || 7007, () => {
  * @param {function} authenticate function used to authenticate JWT
  * @param {HTTP handler function}(req, res) function for processing post HTTP request and response
  */
- app.post("/relay/:peerID/:event", authenticate, (req, res) => {
+app.post("/relay/:peerID/:event", authenticate, (req, res) => {
   let peerID = req.params.peerID;
   let msg = {
     event: req.params.event,
