@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react'
 
 import { Stage, Layer, Line, Text } from 'react-konva';
 
-const Canvas = ({broadcast, lines, setLines, tool}) => {
+const Canvas = ({broadcast, lines, setLines, tool, user}) => {
 
     
     const isDrawing = useRef(false);
@@ -14,7 +14,7 @@ const Canvas = ({broadcast, lines, setLines, tool}) => {
         const pos = e.evt
 
         // setLines([...lines, { tool, points: [pos.x, pos.y] }]);
-        setLines([...lines, { tool, points: [ pos.offsetX, pos.offsetY ] }]);
+        setLines([...lines, { tool, points: [ pos.offsetX, pos.offsetY ], user: user}]);
         console.log("lines:", lines, "position of current Mouse, ", e)
     };
 
@@ -27,7 +27,8 @@ const Canvas = ({broadcast, lines, setLines, tool}) => {
         // const point = stage.getPointerPosition();
         const point = e.evt
 
-        let lastLine = lines[lines.length - 1];
+        // let lastLine = lines[lines.length - 1];
+        let lastLine = lines.findLast(element => element.user==user)
 
         // add point
         lastLine.points = lastLine.points.concat([ point.offsetX, point.offsetY ]);
@@ -36,6 +37,7 @@ const Canvas = ({broadcast, lines, setLines, tool}) => {
         lines.splice(lines.length - 1, 1, lastLine);
 
         setLines(lines.concat());
+        console.log("lines:", lines, "position of current Mouse, ", e)
         broadcast(JSON.stringify(lines.concat()));
     };
 

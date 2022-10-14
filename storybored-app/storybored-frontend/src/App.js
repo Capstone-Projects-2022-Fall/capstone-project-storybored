@@ -135,7 +135,7 @@ const App = ({ context }) => {
                 <option value="pen">Pen</option>
                 <option value="eraser">Eraser</option>
             </select>
-            <Canvas broadcast={broadcast} lines={lines} setLines={setLines} tool={tool}/>
+            <Canvas broadcast={broadcast} lines={lines} setLines={setLines} tool={tool} user={context.username}/>
         </div>
     )
 }
