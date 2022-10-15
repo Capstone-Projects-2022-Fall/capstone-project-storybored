@@ -8,6 +8,7 @@ import axios from 'axios'
 
 // const address = '10.142.0.2'
 const address = "34.148.104.177"
+// const address = "localhost"
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 

@@ -17,7 +17,7 @@ const Canvas = ({broadcast, lines, setLines, tool, user}) => {
         let currentPoint = [...lines, { tool, points: [ pos.offsetX, pos.offsetY ], user: user}]
         setLines(currentPoint);
         broadcast(JSON.stringify(currentPoint));
-        console.log("lines:", lines, "position of current Mouse, ", e)
+        // console.log("lines:", lines, "position of current Mouse, ", e)
         
     };
 
@@ -29,19 +29,18 @@ const Canvas = ({broadcast, lines, setLines, tool, user}) => {
         // const stage = e.target.getStage();
         // const point = stage.getPointerPosition();
         const point = e.evt
+        
+        let lastLineIndex = lines.findLastIndex(element => element.user===user)
+        let lastLine = lines[lastLineIndex]
 
-        // let lastLine = lines[lines.length - 1];
-        let lastLine = lines.findLast(element => element.user===user)
-
-        // add point
         lastLine.points = lastLine.points.concat([ point.offsetX, point.offsetY ]);
 
-        // replace last
-        lines.splice(lines.length - 1, 1, lastLine);
+        lines.splice(lastLineIndex, 1, lastLine);
 
         setLines(lines.concat());
-        console.log("lines:", lines, "position of current Mouse, ", e)
+        // console.log("lines:", lines, "position of current Mouse, ", e, point.offsetX, point.offsetY)
         broadcast(JSON.stringify(lines.concat()));
+        
     };
 
     const handleMouseUp = () => {

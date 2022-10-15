@@ -26,6 +26,7 @@ const server = http.createServer(app);
 
 // let address = '10.142.0.2'
 let address = 'redis'
+// let address = 'localhost'
 
 /**
  * internal list of connected clients
