@@ -7,28 +7,29 @@ import Shape from "../shape/Shape";
 const Canvas = ({ broadcast, shapes, setShapes }) => {
   const [tool, setTool] = useState("pen");
   const [color, setColor] = useState("red");
+  const [tempId, setTempId] = useState((tempId) => (tempId = generateId()));
   const isDrawing = useRef(false);
   var lastShape;
 
   const handleMouseDown = (e) => {
-    let tempId = generateId();
     isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
     if (tool === "pen") {
       lastShape = {
         type: "line",
-        key: tempId,
         id: tempId,
         points: [pos.x, pos.y, pos.x, pos.y],
         stroke: color,
         strokeWidth: 4,
-        tension: "round",
+        tension: 0.5,
         lineCap: "round",
       };
+      console.log(lastShape);
     } else {
       console.log("pen only!");
     }
     setShapes(shapes.concat(lastShape));
+    console.log(shapes);
     //setShape([...shapes, {tool, color, shape}]);
     // setLines([...lines, { tool, points: [pos.x, pos.y] }]);
     console.log(JSON.stringify([...shapes, { tool, lastShape }]));
@@ -42,28 +43,42 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
       return;
     }
     const stage = e.target.getStage();
-    const point = stage.getPointerPosition();
-    let lastLine = lastShape.points;
-    console.log(lastShape);
+    const pos = stage.getPointerPosition();
+
+    let index = shapes.findIndex((element) => element.id === tempId);
+    let tempLine = shapes[index];
+    tempLine.points = tempLine.points.concat([pos.x, pos.y]);
+    shapes[index] = tempLine;
+    console.log(shapes[index]);
+    console.log(shapes);
+    // let current = shapes[index];
+    // {
+    // } //current.points = current.points.concat([point.x, point.y]);
+    // let lastLine = lastShape.points;
+
+    //shapes.splice(index, 1, current);
+
     // add point
     // lastShape.points = lastLine.concat([point.x, point.y]);
 
     // replace last
     // lines.splice(lines.length - 1, 1, lastLine);
 
-    setShapes(shapes.concat(lastShape));
-    // setLines(lines.concat());
-    console.log(JSON.stringify(shapes.concat()));
-    broadcast(JSON.stringify(shapes.concat()));
+    setShapes([...shapes]);
+    // // setLines(lines.concat());
+    // console.log(JSON.stringify(shapes.concat()));
+    broadcast(JSON.stringify([...shapes]));
   };
 
   const handleMouseUp = () => {
+    lastShape = null;
+    setTempId((tempId) => generateId());
     isDrawing.current = false;
   };
 
   function generateId() {
-    const randomId = Math.random().toString(36).substring(10);
-    return randomId;
+    const result = Math.random().toString(36).substring(2, 9);
+    return result;
   }
 
   return (
@@ -78,7 +93,7 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
         <Layer>
           <Text text="Just start drawing" x={5} y={30} />
           {shapes.map((shape, i) => (
-            <Shape shape={shape} />
+            <Shape key={i} shape={shape} />
           ))}
           {/* {lines.map((line, i) => (
             <Line

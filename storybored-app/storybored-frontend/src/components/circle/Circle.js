@@ -5,6 +5,7 @@ const Circle = (props) => {
   const { properties } = props;
   return (
     <KonvaCircle
+      key={properties.key}
       id={properties.id}
       x={properties.x}
       y={properties.y}

@@ -5,6 +5,7 @@ const Rectangle = (props) => {
   const { properties } = props;
   return (
     <Rect
+      key={properties.key}
       id={properties.id}
       x={properties.x}
       y={properties.y}

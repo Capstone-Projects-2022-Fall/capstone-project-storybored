@@ -5,6 +5,7 @@ const Line = (props) => {
   const { properties } = props;
   return (
     <KonvaLine
+      key={properties.key}
       id={properties.id}
       points={properties.points}
       stroke={properties.stroke}
