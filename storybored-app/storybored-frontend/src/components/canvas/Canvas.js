@@ -15,6 +15,7 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
     isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
     if (tool === "pen") {
+      //put this in a map or something so we can actually maintain this
       lastShape = {
         type: "line",
         id: tempId,
@@ -23,18 +24,41 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
         strokeWidth: 4,
         tension: 0.5,
         lineCap: "round",
+        draggable: false,
       };
       console.log(lastShape);
+    } else if (tool === "rectangle") {
+      lastShape = {
+        type: "rectangle",
+        id: tempId,
+        x: pos.x,
+        y: pos.y,
+        stroke: "#000000",
+        strokeWidth: 1,
+        fill: color,
+        width: 60,
+        height: 40,
+        draggable: false,
+      };
+    } else if (tool === "circle") {
+      console.log("found a cirlce!");
+      lastShape = {
+        type: "circle",
+        id: tempId,
+        x: pos.x,
+        y: pos.y,
+        fill: color,
+        stroke: "#000000",
+        strokeWidth: 1,
+        radius: 40,
+        draggable: false,
+      };
     } else {
-      console.log("pen only!");
+      console.log("not supported yet!");
     }
     setShapes(shapes.concat(lastShape));
     console.log(shapes);
-    //setShape([...shapes, {tool, color, shape}]);
-    // setLines([...lines, { tool, points: [pos.x, pos.y] }]);
-    console.log(JSON.stringify([...shapes, { tool, lastShape }]));
-    // broadcast(JSON.stringify([...lines, { tool, points: [pos.x, pos.y] }]));
-    broadcast(JSON.stringify([...shapes, { tool, lastShape }]));
+    broadcast(JSON.stringify([...shapes]));
   };
 
   const handleMouseMove = (e) => {
@@ -49,21 +73,8 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
     let tempLine = shapes[index];
     tempLine.points = tempLine.points.concat([pos.x, pos.y]);
     shapes[index] = tempLine;
-    console.log(shapes[index]);
-    console.log(shapes);
-    // let current = shapes[index];
-    // {
-    // } //current.points = current.points.concat([point.x, point.y]);
-    // let lastLine = lastShape.points;
-
-    //shapes.splice(index, 1, current);
-
-    // add point
-    // lastShape.points = lastLine.concat([point.x, point.y]);
-
-    // replace last
-    // lines.splice(lines.length - 1, 1, lastLine);
-
+    // console.log(shapes[index]);
+    // console.log(shapes);
     setShapes([...shapes]);
     // // setLines(lines.concat());
     // console.log(JSON.stringify(shapes.concat()));
@@ -74,6 +85,7 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
     lastShape = null;
     setTempId((tempId) => generateId());
     isDrawing.current = false;
+    broadcast(JSON.stringify([...shapes]));
   };
 
   function generateId() {
@@ -95,18 +107,6 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
           {shapes.map((shape, i) => (
             <Shape key={i} shape={shape} />
           ))}
-          {/* {lines.map((line, i) => (
-            <Line
-              key={i}
-              points={line.points}
-              stroke={color}
-              strokeWidth={5}
-              tension={0.5}
-              lineCap="round"
-              lineJoin="round"
-              globalCompositeOperation={line.tool === "eraser" ? "destination-out" : "source-over"}
-            />
-          ))} */}
         </Layer>
       </Stage>
       <select
@@ -118,7 +118,7 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
         <option value="pen">Pen</option>
         <option value="rectangle">Rectangle</option>
         <option value="circle">Circle</option>
-        <option value="eraser">Eraser</option>
+        <option value="select">Select</option>
       </select>
       <select //extend to stroke and color selection, convert to swatches or hexpicker
         value={color}

@@ -1,12 +1,11 @@
 import React from "react";
 import Rectangle from "../rectangle/Rectangle";
 import Line from "../line/Line";
-import { Circle } from "react-konva";
+import Circle from "../circle/Circle";
 //import Shapes from shape directories
 
 const Shape = (props) => {
   const { shape } = props;
-  // console.log(shape);
   if (shape.type === "line") {
     return <Line properties={shape} />;
   } else if (shape.type === "rectangle") {

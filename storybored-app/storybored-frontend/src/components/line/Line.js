@@ -13,6 +13,7 @@ const Line = (props) => {
       tension={properties.tension}
       lineCap={properties.lineCap}
       lineJoin={properties.lineJoin}
+      draggable={properties.draggable}
       // globalCompositeOperation={line.tool === "eraser" ? "destination-out" : "source-over"}
     />
   );
