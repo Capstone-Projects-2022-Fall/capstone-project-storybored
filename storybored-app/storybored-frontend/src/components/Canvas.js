@@ -14,8 +14,11 @@ const Canvas = ({broadcast, lines, setLines, tool, user}) => {
         const pos = e.evt
 
         // setLines([...lines, { tool, points: [pos.x, pos.y] }]);
-        setLines([...lines, { tool, points: [ pos.offsetX, pos.offsetY ], user: user}]);
+        let currentPoint = [...lines, { tool, points: [ pos.offsetX, pos.offsetY ], user: user}]
+        setLines(currentPoint);
+        broadcast(JSON.stringify(currentPoint));
         console.log("lines:", lines, "position of current Mouse, ", e)
+        
     };
 
     const handleMouseMove = (e) => {
