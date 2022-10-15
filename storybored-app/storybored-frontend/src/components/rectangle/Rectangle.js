@@ -15,6 +15,7 @@ const Rectangle = (props) => {
       strokeWidth={properties.strokeWidth}
       fill={properties.fill}
       draggable={properties.draggable}
+      listening={properties.listening}
     />
   );
 };

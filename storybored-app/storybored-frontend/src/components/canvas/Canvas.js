@@ -36,12 +36,12 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
         stroke: "#000000",
         strokeWidth: 1,
         fill: color,
-        width: 60,
-        height: 40,
+        width: 5,
+        height: 5,
         draggable: false,
+        listening: false,
       };
     } else if (tool === "circle") {
-      console.log("found a cirlce!");
       lastShape = {
         type: "circle",
         id: tempId,
@@ -50,33 +50,47 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
         fill: color,
         stroke: "#000000",
         strokeWidth: 1,
-        radius: 40,
+        radius: 4,
         draggable: false,
+        listening: false,
       };
     } else {
       console.log("not supported yet!");
     }
     setShapes(shapes.concat(lastShape));
-    console.log(shapes);
     broadcast(JSON.stringify([...shapes]));
   };
 
   const handleMouseMove = (e) => {
     // no drawing - skipping
-    if (!isDrawing.current || tool !== "pen") {
+    if (!isDrawing.current || tool === "select") {
       return;
     }
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
-
     let index = shapes.findIndex((element) => element.id === tempId);
-    let tempLine = shapes[index];
-    tempLine.points = tempLine.points.concat([pos.x, pos.y]);
-    shapes[index] = tempLine;
+    if (tool === "pen") {
+      let tempLine = shapes[index];
+      tempLine.points = tempLine.points.concat([pos.x, pos.y]);
+      shapes[index] = tempLine;
+    }
+    if (tool === "rectangle") {
+      let tempRect = shapes[index];
+      tempRect.width = pos.x - tempRect.x;
+      tempRect.height = pos.y - tempRect.y;
+      shapes[index] = tempRect;
+    }
+    if (tool === "circle") {
+      let tempCircle = shapes[index];
+      let x = pos.x - tempCircle.x;
+      let y = pos.y - tempCircle.y;
+      let rad = Math.sqrt(x * x + y * y);
+      tempCircle.radius = rad;
+      shapes[index] = tempCircle;
+    }
     // console.log(shapes[index]);
     // console.log(shapes);
     setShapes([...shapes]);
-    // // setLines(lines.concat());
     // console.log(JSON.stringify(shapes.concat()));
     broadcast(JSON.stringify([...shapes]));
   };

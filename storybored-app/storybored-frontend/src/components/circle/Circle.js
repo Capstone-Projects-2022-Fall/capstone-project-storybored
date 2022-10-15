@@ -14,6 +14,7 @@ const Circle = (props) => {
       stroke={properties.stroke}
       strokeWidth={properties.strokeWidth}
       draggable={properties.draggable}
+      listening={properties.listening}
     />
   );
 };
