@@ -7,7 +7,7 @@ import axios from 'axios';
 
 
 
-const App = ({ context }) => {
+const App = ({ context, url }) => {
     
 
     const [lines, setLines] = useState([]);
@@ -71,7 +71,7 @@ const App = ({ context }) => {
     }
 
     function relay(peerID, event, data) {
-        axios.post(`http://localhost:7007/relay/${peerID}/${event}`, data, {
+        axios.post(`http://${url}/relay/${peerID}/${event}`, data, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${context.token}`,

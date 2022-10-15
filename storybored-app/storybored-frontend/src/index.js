@@ -6,8 +6,8 @@ import reportWebVitals from './reportWebVitals';
 import axios from 'axios'
 
 
-const address = '10.142.0.2'
-// const address = "localhost"
+// const address = '10.142.0.2'
+const address = "34.148.104.177"
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -44,7 +44,7 @@ async function connect(token, username) {
 
   root.render(
     <React.StrictMode>
-      <App context={context} />
+      <App context={context} url={address} />
     </React.StrictMode>
   );
 }
