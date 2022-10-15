@@ -7,9 +7,11 @@ import axios from 'axios';
 
 
 
-const App = ({ context }) => {
+const App = ({ context, url }) => {
+    
 
     const [lines, setLines] = useState([]);
+    const [tool, setTool] = useState('pen');
  
     const rtcConfig = {
         iceServers: [
@@ -69,7 +71,7 @@ const App = ({ context }) => {
     }
 
     function relay(peerID, event, data) {
-        axios.post(`http://localhost:7007/relay/${peerID}/${event}`, data, {
+        axios.post(`http://${url}:7007/relay/${peerID}/${event}`, data, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${context.token}`,
@@ -125,7 +127,15 @@ const App = ({ context }) => {
 
     return (
         <div>
-            <Canvas broadcast={broadcast} lines={lines} setLines={setLines}/>
+            <select
+                value={tool}
+                onChange={(e) => {
+                    setTool(e.target.value);
+                }}>
+                <option value="pen">Pen</option>
+                <option value="eraser">Eraser</option>
+            </select>
+            <Canvas broadcast={broadcast} lines={lines} setLines={setLines} tool={tool} user={context.username}/>
         </div>
     )
 }
