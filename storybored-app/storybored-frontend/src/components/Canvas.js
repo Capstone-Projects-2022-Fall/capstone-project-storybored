@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react'
+import React, { useRef } from 'react'
 
 import { Stage, Layer, Line, Text } from 'react-konva';
 
@@ -10,37 +10,35 @@ const Canvas = ({broadcast, lines, setLines, tool, user}) => {
 
     const handleMouseDown = (e) => {
         isDrawing.current = true;
-        // const pos = e.target.getStage().getPointerPosition();
-        const pos = e.evt
 
-        // setLines([...lines, { tool, points: [pos.x, pos.y] }]);
-        let currentPoint = [...lines, { tool, points: [ pos.offsetX, pos.offsetY ], user: user}]
+        // grab position 
+        const pos = e.target.getStage().getPointerPosition();
+
+        // current position is the previous lines combined with new point
+        let currentPoint = [...lines, { tool, points: [ pos.x, pos.y ], user: user}]
+
+        // set line as new point
         setLines(currentPoint);
         broadcast(JSON.stringify(currentPoint));
-        // console.log("lines:", lines, "position of current Mouse, ", e)
-        
     };
 
     const handleMouseMove = (e) => {
-        // no drawing - skipping
         if (!isDrawing.current) {
             return;
         }
-        // const stage = e.target.getStage();
-        // const point = stage.getPointerPosition();
-        const point = e.evt
-        
+        const pos = e.target.getStage().getPointerPosition();
+
         let lastLineIndex = lines.findLastIndex(element => element.user===user)
         let lastLine = lines[lastLineIndex]
 
-        lastLine.points = lastLine.points.concat([ point.offsetX, point.offsetY ]);
+        lastLine.points = lastLine.points.concat([ pos.x, pos.y ]);
 
-        lines.splice(lastLineIndex, 1, lastLine);
+        // dont want to mutate original variable 
+        let newLine = lines
+        newLine.splice(lastLineIndex, 1, lastLine);
 
-        setLines(lines.concat());
-        // console.log("lines:", lines, "position of current Mouse, ", e, point.offsetX, point.offsetY)
-        broadcast(JSON.stringify(lines.concat()));
-        
+        setLines(newLine.concat());
+        broadcast(JSON.stringify(lines.concat()));        
     };
 
     const handleMouseUp = () => {
