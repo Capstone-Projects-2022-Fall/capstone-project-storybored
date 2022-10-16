@@ -14,7 +14,8 @@ const Line = (props) => {
       lineCap={properties.lineCap}
       lineJoin={properties.lineJoin}
       draggable={properties.draggable}
-      // globalCompositeOperation={line.tool === "eraser" ? "destination-out" : "source-over"}
+      //   globalCompositeOperation={properties.globalCompositeOperation}
+      //   globalCompositeOperation={tool === "eraser" ? "destination-out" : "source-over"}
     />
   );
 };

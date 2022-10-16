@@ -16,6 +16,9 @@ const Rectangle = (props) => {
       fill={properties.fill}
       draggable={properties.draggable}
       listening={properties.listening}
+      //   globalCompositeOperation={properties.globalCompositeOperation}
+      //   globalCompositeOperation={tool === "eraser" ? "destination-out" : "source-over"}
+      //   onMouseOver={handleMouseOver()}
     />
   );
 };

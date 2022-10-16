@@ -15,6 +15,10 @@ const Circle = (props) => {
       strokeWidth={properties.strokeWidth}
       draggable={properties.draggable}
       listening={properties.listening}
+      //   globalCompositeOperation={properties.globalCompositeOperation}
+      //   onDragStart={}
+      //   onDragMove={}
+      //   onDragEnd={}
     />
   );
 };
