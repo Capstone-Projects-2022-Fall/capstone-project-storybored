@@ -1,24 +1,27 @@
 
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 
 import { Stage, Layer, Line, Text } from 'react-konva';
 
 const Canvas = ({broadcast, lines, setLines, tool, user}) => {
 
-    
+    const [ID, setID] = useState(0)
     const isDrawing = useRef(false);
+    // console.log("update", lines)
 
     const handleMouseDown = (e) => {
         isDrawing.current = true;
 
-        // const pos = e.target.getStage().getPointerPosition();
-        const pos = e.evt
+        // grab position 
+        const pos = e.target.getStage().getPointerPosition();
 
-        // setLines([...lines, { tool, points: [pos.x, pos.y] }]);
-        let currentPoint = [...lines, { tool, points: [ pos.offsetX, pos.offsetY ], user: user}]
+        // current position is the previous lines combined with new point information + userid information 
+        let currentPoint = { tool, points: [ pos.x, pos.y ], user: user}
+        let newLine = [...lines, currentPoint]
+
         // set line as new point
-        setLines(currentPoint);
-        broadcast(JSON.stringify(currentPoint));
+        setLines(newLine);
+        // broadcast(JSON.stringify(currentPoint), true);
     };
 
     // the function is triggered IF it passes the first condition, which is the mouse is DOWN 
@@ -26,20 +29,30 @@ const Canvas = ({broadcast, lines, setLines, tool, user}) => {
         if (!isDrawing.current) {
             return;
         }
-        // const stage = e.target.getStage();
-        // const point = stage.getPointerPosition();
-        const point = e.evt
-        
+
+        // grab current position
+        const pos = e.target.getStage().getPointerPosition();
+
+        // lines is a list of lines (mouse down, mouse movement, mouse up), so grab the index of the last line that was drawn by the CURRENT USER 
         let lastLineIndex = lines.findLastIndex(element => element.user===user)
+
+        // grab the last line with the index 
         let lastLine = lines[lastLineIndex]
 
-        lastLine.points = lastLine.points.concat([ point.offsetX, point.offsetY ]);
+        // add the current position of the mouse to the lastLine points (update the line currently being drawn)
+        lastLine.points = lastLine.points.concat([ pos.x, pos.y ]);
 
-        lines.splice(lastLineIndex, 1, lastLine);
+        // dont want to mutate original variable lines, so make a copy of lines
+        let newLine = [...lines]
+        
+        // splice newLine to update lines variable --> use index of the last line drawn by the user and replace with the lastLine variable which has the new points added to it
+        newLine.splice(lastLineIndex, 1, lastLine);
 
-        setLines(lines.concat());
-        // console.log("lines:", lines, "position of current Mouse, ", e, point.offsetX, point.offsetY)
-        broadcast(JSON.stringify(lines.concat()));
+        // finally set the lines variables to our updated version
+        setLines(newLine.concat());
+
+        // broadcast
+        broadcast(JSON.stringify(lines));        
     };
 
     const handleMouseUp = () => {

@@ -11,7 +11,11 @@ const App = ({ context, url }) => {
     
 
     const [lines, setLines] = useState([]);
+    // const [otherLines, setOtherLines] = useState([]);
+   
     const [tool, setTool] = useState('pen');
+
+    // console.log("rerender...", lines)
  
     const rtcConfig = {
         iceServers: [
@@ -53,7 +57,7 @@ const App = ({ context, url }) => {
                 onPeerData(message.peer.id, event.data);
             };
             context.channels[message.peer.id] = channel;
-            createOffer(message.peer.id, peer);
+            createOffer(message.peer.id, peer,);
         } else {
             peer.ondatachannel = function (event) {
                 context.channels[message.peer.id] = event.channel;
@@ -120,9 +124,35 @@ const App = ({ context, url }) => {
         }
     }
 
-    function onPeerData(id, data) {
+    const onPeerData = (id, data) => {
+
+        // why the FUCKKEKFKF does lines not exist at this point.... 
+
         let msg = JSON.parse(data);
-        setLines(lines.concat(msg));
+       
+        
+        setLines((lines) => {
+            console.log(lines, msg[0].user)
+            let lastLineIndex = lines.findLastIndex(element => element.user === msg[0].user)
+            let linesCopy = [...lines]
+            let copyWithout = linesCopy.splice(lastLineIndex, 1)
+            console.log("helllo",lastLineIndex, lines, copyWithout, linesCopy, msg)
+            return [...linesCopy, msg[0]]
+            
+            
+            // console.log("INDEX",lastLineIndex)
+            // if(lastLineIndex==-1){
+            //     return [...lines, msg]
+            // }
+            // else{
+            //     let newLine=lines
+            //     newLine[lastLineIndex] = msg
+            //     return newLine
+            // }
+            
+        })
+        // console.log("LINES IS", lines)
+
     }
 
     return (
