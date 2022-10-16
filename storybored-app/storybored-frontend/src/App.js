@@ -2,9 +2,12 @@
 import React, { useEffect, useState, useRef } from 'react'
 
 import Canvas from './components/Canvas';
+import Home from './components/Home.js' ;
+import CreateRoom from './components/CreateRoom';
 
 import axios from 'axios';
 
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
 
 const App = ({ context }) => {
@@ -124,8 +127,17 @@ const App = ({ context }) => {
     }
 
     return (
-        <div>
-            <Canvas broadcast={broadcast} lines={lines} setLines={setLines}/>
+
+        <div className="App">
+            <header className="App-header">
+                <Router>
+                    <Routes>
+                        <Route path='' element={<Home />}/>
+                        <Route path='/CreateRoom' element={<CreateRoom />} />
+                        <Route path='/Canvas' element={<Canvas broadcast={broadcast} lines={lines} setLines={setLines}/>} />
+                    </Routes>
+                </Router>
+            </header>
         </div>
     )
 }
