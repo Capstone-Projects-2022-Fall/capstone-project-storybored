@@ -13,7 +13,7 @@ bluebird.promisifyAll(redis);
 
 
 
-
+let address = 'localhost'
 
 /**
  * Creates endpoints for HTTP response and requests.
@@ -37,7 +37,7 @@ bluebird.promisifyAll(redis);
  /**
   * Client for redis communication
   */
- const redisClient = redis.createClient({port:6379});
+ const redisClient = redis.createClient({ host: address, port: 6379 });
 
 
 
@@ -121,7 +121,7 @@ function authenticate(req, res, next) {
   let client = {
     id: req.user.id,
     user: req.user,
-    redis: redis.createClient({port:6379}),
+    redis: redis.createClient({ host: address, port: 6379 }),
     emit: (event, data) => {
       res.write(`id: ${uuid.v4()}\n`);
       res.write(`event: ${event}\n`);

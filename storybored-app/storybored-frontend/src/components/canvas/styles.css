@@ -1,0 +1,15 @@
+.options {
+  display: flex;
+  position: relative;
+  text-align: center;
+}
+
+.options .tools {
+  position: relative;
+}
+
+.options .react-colorful {
+  padding: 20px;
+  width: 80px;
+  height: 80px;
+}
