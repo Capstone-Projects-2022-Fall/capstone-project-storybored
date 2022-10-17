@@ -123,7 +123,7 @@ const App = ({ context, url  }) => {
   return (
     <div>
       {/* <Canvas broadcast={broadcast} lines={lines} setLines={setLines} /> */}
-      <Canvas broadcast={broadcast} shapes={shapes} setShapes={setShapes} />
+      <Canvas broadcast={broadcast} shapes={shapes} setShapes={setShapes} user={context.username} />
     </div>
   );
 };

@@ -5,7 +5,7 @@ import Shape from "../shape/Shape";
 import "./styles.css";
 
 // const Canvas = ({ broadcast, lines, setLines }) => {
-const Canvas = ({ broadcast, shapes, setShapes }) => {
+const Canvas = ({ broadcast, shapes, setShapes, user }) => {
   const [tool, setTool] = useState("pen");
   const [strokeColor, setStrokeColor] = useState("#abcdef");
   const [fillColor, setFillColor] = useState("#fedcba");
@@ -28,6 +28,7 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
         tension: 0.5,
         lineCap: "round",
         draggable: false,
+        user: user
       };
     }
     if (tool === "rectangle") {
@@ -43,6 +44,7 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
         height: 5,
         draggable: false,
         listening: false,
+        user: user
       };
     }
     if (tool === "circle") {
@@ -57,6 +59,7 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
         radius: 4,
         draggable: false,
         listening: false,
+        user: user
       };
     }
     if (tool === "eraser") {
@@ -73,7 +76,10 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
     }
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
-    let index = shapes.findIndex((element) => element.id === tempId);
+    
+    // let index = shapes.findIndex((element) => element.id === tempId);
+    let index = shapes.findLastIndex(element => element.user===user)
+
     if (tool === "pen") {
       let tempLine = shapes[index];
       tempLine.points = tempLine.points.concat([pos.x, pos.y]);
