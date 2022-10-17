@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 
 import Canvas from "./components/canvas/Canvas";
 
 import axios from "axios";
 
-const App = ({ context }) => {
+const App = ({ context, url  }) => {
   //const [lines, setLines] = useState([]);
   const [shapes, setShapes] = useState([]);
 
@@ -64,7 +64,7 @@ const App = ({ context }) => {
   }
 
   function relay(peerID, event, data) {
-    axios.post(`http://localhost:7007/relay/${peerID}/${event}`, data, {
+    axios.post(`http://${url}:7007/relay/${peerID}/${event}`, data, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${context.token}`,
@@ -72,9 +72,9 @@ const App = ({ context }) => {
     });
   }
 
-  function peerDataUpdate(peerID, data) {
-    onPeerData(peerID, data);
-  }
+  // function peerDataUpdate(peerID, data) {
+  //   onPeerData(peerID, data);
+  // }
 
   function removePeer(data) {
     let message = JSON.parse(data.data);
