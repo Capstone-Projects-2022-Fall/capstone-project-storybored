@@ -25,8 +25,8 @@ app.locals.index = 1000000000;
 const server = http.createServer(app);
 
 // let address = '10.142.0.2'
-let address = 'redis'
-// let address = 'localhost'
+// let address = 'redis'
+let address = 'localhost'
 
 /**
  * internal list of connected clients
@@ -47,6 +47,10 @@ app.get("/", (req, res) => {
   res.redirect(`/${id}`);
 });
 
+// app.get("/roomID", (req, res) => {
+//   let id = (app.locals.index++).toString(36);
+//   res.json(id);
+// });
 
 
 /**
@@ -194,6 +198,10 @@ app.post("/:roomId/join", authenticate, async (req, res) => {
  * @param {HTTP handler function} (req, res) function for processing post HTTP request and response
  */
 app.post("/access", (req, res) => {
+  console.log(req)
+
+  let roomID = (app.locals.index++).toString(36);
+  
 
   if (!req.body.username) {
     return res.sendStatus(403);
@@ -205,12 +213,9 @@ app.post("/access", (req, res) => {
 
   // 401 error caused by : no .env file with token secret to create a new token below
   const token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: "3600s" });
-  return res.json({ token });
+  return res.json({ token, roomID });
 });
 
-server.listen(process.env.PORT || 7007, () => {
-  console.log(`started server on port ${server.address().port}`);
-});
 
 
 
@@ -291,8 +296,6 @@ async function disconnect(client) {
     })
   );
 }
-
-
 
 /**
  * Relays drawdata messages to peers
@@ -309,4 +312,8 @@ app.post("/relay/:peerID/:event", authenticate, (req, res) => {
 
   redisClient.publish(`messages:${peerID}`, JSON.stringify(msg));
   return res.sendStatus(200);
+});
+
+server.listen(process.env.PORT || 7007, () => {
+  console.log(`started server on port ${server.address().port}`);
 });

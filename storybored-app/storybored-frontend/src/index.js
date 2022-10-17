@@ -36,6 +36,8 @@ async function connect(token, username) {
     channels: {},
   }
 
+  console.log(window.location.hostname)
+
   context.eventSource = new EventSource(`http://${address}:7007/connect?token=${token}`);
 
   context.eventSource.addEventListener("connected", (user) => {

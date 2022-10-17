@@ -11,3 +11,13 @@
 
 - To run all at once:
 - Run ```docker-compose up``` in storybored-app folder 
+
+
+
+- To push to GCR : 
+- ```docker tag storybored-backend:0.1 gcr.io/storybored-364419/storybored-backend:0.1```
+- ```docker push gcr.io/storybored-364419/storybored-backend:0.1```
+
+
+- ```docker tag storybored-frontend:0.1 gcr.io/storybored-364419/storybored-frontend:0.1```
+- ```docker push gcr.io/storybored-364419/storybored-frontend:0.1```

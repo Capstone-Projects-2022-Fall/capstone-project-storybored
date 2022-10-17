@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: storybored.ds
+  labels:
+    app: storybored
+    role: ds
+spec:
+  hostNetwork: true
+  restartPolicy: Never
+  containers:
+  - image: [GCR_REGION].gcr.io/[PROJECT_ID]/openarena:0.8.8
+    name: openarena-dgs
+    args: ["+exec", "single-match.cfg", "+set", "dedicated", "1", "+set", "net_port", "27961"]
+
+  - image: 
+    name: storybored-backend 
+    args: ["npm start"]
+
+  - image: redis:alpine
+    name: redis
+
+    
