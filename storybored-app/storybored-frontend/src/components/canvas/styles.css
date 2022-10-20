@@ -13,3 +13,16 @@
   width: 80px;
   height: 80px;
 }
+
+.Canvas-Container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  flex-direction: column;
+}
+
+.Canvas {
+  margin: 0 auto;
+  border: black solid 1px;
+}

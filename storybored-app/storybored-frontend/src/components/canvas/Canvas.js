@@ -1,8 +1,12 @@
 import React, { useState, useRef } from "react";
 import { Stage, Layer, Text } from "react-konva";
 import { HexColorPicker } from "react-colorful";
+import { useLocation } from "react-router-dom";
 import Shape from "../shape/Shape";
 import "./styles.css";
+
+const width = window.innerWidth
+const height = window.innerHeight
 
 // const Canvas = ({ broadcast, lines, setLines }) => {
 const Canvas = ({ broadcast, shapes, setShapes, user }) => {
@@ -13,6 +17,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
   const [strokeWidth, setStrokeWidth] = useState(2);
   const isDrawing = useRef(false);
   var lastShape;
+  const location = useLocation();
 
   const handleMouseDown = (e) => {
     isDrawing.current = true;
@@ -129,10 +134,10 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
   // };
 
   return (
-    <div>
-      <Stage
-        width={window.innerWidth}
-        height={window.innerHeight - 120}
+    <div className = 'Canvas-Container'>
+      <Stage className='Canvas'
+        width={width - 120}
+        height={height - 120}
         onMouseDown={handleMouseDown}
         onMousemove={handleMouseMove}
         onMouseup={handleMouseUp}

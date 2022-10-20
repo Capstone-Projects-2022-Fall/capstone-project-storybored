@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 
 const CreateRoom = () => {
 
+    let canvasSizeValue = 0;
+
     const navigate = useNavigate()
 
     const navToCanvas = () => {
@@ -22,7 +24,7 @@ const CreateRoom = () => {
             
             <form>
                 <label for='canvas-size-input' id='canvas-size-label'>Canvas Size</label>
-                <input type='text' id='canvas-size-input'></input>
+                <input type='text' id='canvas-size-input' onChange={e => canvasSizeValue = e.target.value}></input>
             </form>
         </div>
         <button id='start-button' onClick={navToCanvas}>Start!</button>
