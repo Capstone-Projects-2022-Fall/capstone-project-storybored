@@ -173,6 +173,25 @@ function onPeerData(id, data) {
   }
 }
 
+//send canvas to server every 5 seconds
+(async () => {
+  while(true) {
+    let data = JSON.stringify(stage);
+    let xhr = new XMLHttpRequest();
+    xhr.withCredentials = false;
+    xhr.open("POST", "/:roomId/join");
+
+    xhr.setRequestHeader("Authorization", `Bearer ${context.token}`);
+    xhr.setRequestHeader("Content-Type", "application/text");
+
+    xhr.onload = () => console.log(xhr.responseText);
+
+    xhr.send(data);
+    
+    await new Promise(r => setTimeout(r, 5000))
+  }
+})();
+
 function logContents() {
   console.log(stage);
   console.log(layer);
