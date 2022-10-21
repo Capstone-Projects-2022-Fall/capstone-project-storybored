@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { Stage, Layer, Text } from "react-konva";
 import { HexColorPicker } from "react-colorful";
 import { useLocation } from "react-router-dom";
-import { GiPencil, GiSquare, GiCircle } from 'react-icons/gi'
+import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from 'react-icons/gi'
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js"
 import "./styles.css";
@@ -17,6 +17,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
   const [fillColor, setFillColor] = useState("#fedcba");
   const [tempId, setTempId] = useState((tempId) => (tempId = generateId()));
   const [strokeWidth, setStrokeWidth] = useState(2);
+  const [showColorSelectors, setShowColorSelectors] = useState(false) 
   const isDrawing = useRef(false);
   var lastShape;
   const location = useLocation();
@@ -138,13 +139,32 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
   const setPen = () => setTool('pen')
   const setRect = () => setTool('rectangle')
   const setCircle = () => setTool('circle')
+  const toggleColorSelectors = () => {
+    setShowColorSelectors(prevState => !prevState)
+  }
+  
+  //Array containing objects for the toolbar; each object has an onClick function and an icon
   const toolbar_params = [ {func: setPen, icon: <GiPencil />},
                           {func: setRect, icon: <GiSquare />},
-                          {func: setCircle, icon: <GiCircle />} ]
+                          {func: setCircle, icon: <GiCircle />},
+                           {func: toggleColorSelectors, icon: <GiLargePaintBrush />}]
 
   return (
     <div className='Container'>
       <Toolbar items={toolbar_params} />
+
+      {showColorSelectors && 
+        <div className="Color-Selectors">
+          <div className="Stroke">
+            <p>Stroke Color</p>
+            <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
+          </div>
+          <div className="Fill">
+            <p>Fill Color</p>
+            <HexColorPicker color={fillColor} onChange={setFillColor} />
+          </div>
+        </div> }
+
       <div className = 'Canvas-Container'>
         <Stage className='Canvas'
           width={width - 120}
@@ -161,14 +181,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
           </Layer>
         </Stage>
         <section className="options">
-          <div>
-            Stroke Color
-            <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
-          </div>
-          <div>
-            Fill Color
-            <HexColorPicker color={fillColor} onChange={setFillColor} />
-          </div>
+
           <div className="tools">
             <div style={{fontSize: '2em'}}>Tool: {tool}</div>
             

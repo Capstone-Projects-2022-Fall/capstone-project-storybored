@@ -8,12 +8,6 @@
   position: relative;
 }
 
-.options .react-colorful {
-  padding: 20px;
-  width: 80px;
-  height: 80px;
-}
-
 .Canvas-Container {
   display: flex;
   justify-content: center;
@@ -43,9 +37,24 @@
 .Toolbar-Item {
   border: solid black 1px;
   max-height: 100px;
+  font-size: xx-large;
 }
 
 .Container {
   display: flex;
   flex-direction: row;
+}
+
+.Color-Selectors {
+  text-align: center;
+}
+
+.Color-Selectors .react-colorful{
+  padding: 20px;
+  width: 80px;
+  height: 80px;
+}
+
+.Color-Selectors p {
+  margin: 0 auto;
 }
