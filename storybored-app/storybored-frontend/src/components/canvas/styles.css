@@ -26,3 +26,26 @@
   margin: 0 auto;
   border: black solid 1px;
 }
+
+.Toolbar {
+  display: flex;
+  justify-content:flex-start;
+  align-items: center;
+  flex-direction: column;
+  width: 5%;
+  margin-left: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: solid black 1px;
+  
+}
+
+.Toolbar-Item {
+  border: solid black 1px;
+  max-height: 100px;
+}
+
+.Container {
+  display: flex;
+  flex-direction: row;
+}

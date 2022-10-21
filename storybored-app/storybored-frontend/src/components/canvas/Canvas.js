@@ -2,7 +2,9 @@ import React, { useState, useRef } from "react";
 import { Stage, Layer, Text } from "react-konva";
 import { HexColorPicker } from "react-colorful";
 import { useLocation } from "react-router-dom";
+import { GiPencil, GiSquare, GiCircle } from 'react-icons/gi'
 import Shape from "../shape/Shape";
+import Toolbar from "../Toolbar.js"
 import "./styles.css";
 
 const width = window.innerWidth
@@ -133,61 +135,59 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
   //   console.log(e.target.toString());
   // };
 
+  const setPen = () => setTool('pen')
+  const setRect = () => setTool('rectangle')
+  const setCircle = () => setTool('circle')
+  const toolbar_params = [ {func: setPen, icon: <GiPencil />},
+                          {func: setRect, icon: <GiSquare />},
+                          {func: setCircle, icon: <GiCircle />} ]
+
   return (
-    <div className = 'Canvas-Container'>
-      <Stage className='Canvas'
-        width={width - 120}
-        height={height - 120}
-        onMouseDown={handleMouseDown}
-        onMousemove={handleMouseMove}
-        onMouseup={handleMouseUp}
-      >
-        <Layer>
-          <Text text="Just start drawing" x={5} y={30} />
-          {shapes.map((shape, i) => (
-            <Shape key={i} shape={shape} />
-          ))}
-        </Layer>
-      </Stage>
-      <section className="options">
-        <div>
-          Stroke Color
-          <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
-        </div>
-        <div>
-          Fill Color
-          <HexColorPicker color={fillColor} onChange={setFillColor} />
-        </div>
-        <div className="tools">
-          <div>Tool</div>
+    <div className='Container'>
+      <Toolbar items={toolbar_params} />
+      <div className = 'Canvas-Container'>
+        <Stage className='Canvas'
+          width={width - 120}
+          height={height - 120}
+          onMouseDown={handleMouseDown}
+          onMousemove={handleMouseMove}
+          onMouseup={handleMouseUp}
+        >
+          <Layer>
+            <Text text="Just start drawing" x={5} y={30} />
+            {shapes.map((shape, i) => (
+              <Shape key={i} shape={shape} />
+            ))}
+          </Layer>
+        </Stage>
+        <section className="options">
           <div>
-            <select
-              value={tool}
-              onChange={(e) => {
-                setTool(e.target.value);
-              }}
-            >
-              <option value="pen">Pen</option>
-              <option value="rectangle">Rectangle</option>
-              <option value="circle">Circle</option>
-              <option value="eraser">Eraser</option>
-            </select>
+            Stroke Color
+            <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
           </div>
           <div>
-            <div>Stroke width</div>
+            Fill Color
+            <HexColorPicker color={fillColor} onChange={setFillColor} />
+          </div>
+          <div className="tools">
+            <div style={{fontSize: '2em'}}>Tool: {tool}</div>
+            
             <div>
-              <input
-                type="number"
-                value={strokeWidth}
-                id="strokebox"
-                onChange={(e) => {
-                  setStrokeWidth(parseInt(e.target.value));
-                }}
-              ></input>
+              <div>Stroke width</div>
+              <div>
+                <input
+                  type="number"
+                  value={strokeWidth}
+                  id="strokebox"
+                  onChange={(e) => {
+                    setStrokeWidth(parseInt(e.target.value));
+                  }}
+                ></input>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 };
