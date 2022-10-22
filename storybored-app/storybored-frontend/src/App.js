@@ -3,32 +3,94 @@ import React, { useContext, useEffect, useState } from "react";
 import Canvas from "./components/canvas/Canvas";
 import Home from "./components/Home.js";
 import CreateRoom from "./components/CreateRoom";
+<<<<<<< HEAD
 import { SocketContext, SocketProvider } from "./socketContext";
 import { RoomProvider } from "./roomContext";
 import { UsersContext, UsersProvider } from "./usersContext";
+=======
+>>>>>>> 8c04ea1cde0bea9dc10b322a40cb0ea6eb2edfa2
 
 import axios from "axios";
 
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 const App = ({ context, url }) => {
+<<<<<<< HEAD
   const { nickName, room, setNickName, setRoom } = useContext(UsersContext);
   const socket = useContext(SocketContext);
   const { users } = useContext(UsersContext);
+=======
+>>>>>>> 8c04ea1cde0bea9dc10b322a40cb0ea6eb2edfa2
   const [shapes, setShapes] = useState([]);
 
   useEffect(() => {
+<<<<<<< HEAD
     socket.on("message", (msg) => {
       console.log(msg);
     });
     socket.on("notification", (notif) => {
       console.log(notif);
+=======
+    context.eventSource.addEventListener("add-peer", addPeer, false);
+    context.eventSource.addEventListener("remove-peer", removePeer, false);
+    context.eventSource.addEventListener("session-description", sesssionDescription, false);
+    context.eventSource.addEventListener("ice-candidate", iceCandidate, false);
+  }, []);
+
+  function addPeer(data) {
+    let message = JSON.parse(data.data);
+    if (context.peers[message.peer.id]) {
+      return;
+    }
+
+    let peer = new RTCPeerConnection(rtcConfig);
+    context.peers[message.peer.id] = peer;
+
+    peer.onicecandidate = function(event) {
+      if (event.candidate) {
+        // was missing second parameter 'ice-candidate' in relay function
+        relay(message.peer.id, "ice-candidate", event.candidate);
+      }
+    };
+
+    if (message.offer) {
+      // create the data channel, map peer updates
+      let channel = peer.createDataChannel("updates");
+      channel.onmessage = function(event) {
+        onPeerData(message.peer.id, event.data);
+      };
+      context.channels[message.peer.id] = channel;
+      createOffer(message.peer.id, peer);
+    } else {
+      peer.ondatachannel = function(event) {
+        context.channels[message.peer.id] = event.channel;
+        event.channel.onmessage = function(evt) {
+          onPeerData(message.peer.id, evt.data);
+        };
+      };
+    }
+  }
+
+  async function createOffer(peerID, peer) {
+    let offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+    await relay(peerID, "session-description", offer);
+  }
+
+  function relay(peerID, event, data) {
+    axios.post(`http://${url}:7007/relay/${peerID}/${event}`, data, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${context.token}`,
+      },
+>>>>>>> 8c04ea1cde0bea9dc10b322a40cb0ea6eb2edfa2
     });
   }, [socket]);
 
   return (
     <div className="App">
       <header className="App-header">
+<<<<<<< HEAD
         <RoomProvider>
           <UsersProvider>
             <SocketProvider>
@@ -43,6 +105,16 @@ const App = ({ context, url }) => {
             </SocketProvider>
           </UsersProvider>
         </RoomProvider>
+=======
+        <Router>
+          <Routes>
+            <Route path="" element={<Home />} />
+            <Route path="/CreateRoom" element={<CreateRoom />} />
+            {/* <Canvas broadcast={broadcast} lines={lines} setLines={setLines} /> */}
+            <Route path="/Canvas" element={<Canvas broadcast={broadcast} shapes={shapes} setShapes={setShapes} user={context.username} />} />
+          </Routes>
+        </Router>
+>>>>>>> 8c04ea1cde0bea9dc10b322a40cb0ea6eb2edfa2
       </header>
     </div>
   );

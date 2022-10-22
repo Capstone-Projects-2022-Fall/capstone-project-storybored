@@ -6,9 +6,15 @@ import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi"
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
 import "./styles.css";
+<<<<<<< HEAD
 import { SocketContext, SocketProvider } from "../../socketContext";
 import { RoomProvider } from "../../roomContext";
 import { UsersContext, UsersProvider } from "../../usersContext";
+=======
+import { SocketProvider } from "../../socketContext";
+import { RoomProvider } from "../../roomContext";
+import { UsersProvider } from "../../usersContext";
+>>>>>>> 8c04ea1cde0bea9dc10b322a40cb0ea6eb2edfa2
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -161,6 +167,7 @@ const Canvas = ({ shapes, setShapes, user }) => {
 
   return (
     <div className="Container">
+<<<<<<< HEAD
       <Toolbar items={toolbar_params} />
 
       {showColorSelectors && (
@@ -207,11 +214,65 @@ const Canvas = ({ shapes, setShapes, user }) => {
                     setStrokeWidth(parseInt(e.target.value));
                   }}
                 ></input>
+=======
+      <RoomProvider>
+        <UsersProvider>
+          <SocketProvider>
+            <Toolbar items={toolbar_params} />
+
+            {showColorSelectors && (
+              <div className="Color-Selectors">
+                <div className="Stroke">
+                  <p>Stroke Color</p>
+                  <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
+                </div>
+                <div className="Fill">
+                  <p>Fill Color</p>
+                  <HexColorPicker color={fillColor} onChange={setFillColor} />
+                </div>
+>>>>>>> 8c04ea1cde0bea9dc10b322a40cb0ea6eb2edfa2
               </div>
+            )}
+
+            <div className="Canvas-Container">
+              <Stage
+                className="Canvas"
+                width={width - 120}
+                height={height - 120}
+                onMouseDown={handleMouseDown}
+                onMousemove={handleMouseMove}
+                onMouseup={handleMouseUp}
+              >
+                <Layer>
+                  <Text text="Just start drawing" x={5} y={30} />
+                  {shapes.map((shape, i) => (
+                    <Shape key={i} shape={shape} />
+                  ))}
+                </Layer>
+              </Stage>
+              <section className="options">
+                <div className="tools">
+                  <div style={{ fontSize: "2em" }}>Tool: {tool}</div>
+
+                  <div>
+                    <div>Stroke width</div>
+                    <div>
+                      <input
+                        type="number"
+                        value={strokeWidth}
+                        id="strokebox"
+                        onChange={(e) => {
+                          setStrokeWidth(parseInt(e.target.value));
+                        }}
+                      ></input>
+                    </div>
+                  </div>
+                </div>
+              </section>
             </div>
-          </div>
-        </section>
-      </div>
+          </SocketProvider>
+        </UsersProvider>
+      </RoomProvider>
     </div>
   );
 };
