@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext, useEFfect } from "react";
 import { Stage, Layer, Text } from "react-konva";
 import { HexColorPicker } from "react-colorful";
 import { useLocation } from "react-router-dom";
@@ -6,15 +6,15 @@ import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi"
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
 import "./styles.css";
-import { SocketProvider } from "../../socketContext";
+import { SocketContext, SocketProvider } from "../../socketContext";
 import { RoomProvider } from "../../roomContext";
-import { UsersProvider } from "../../usersContext";
+import { UsersContext, UsersProvider } from "../../usersContext";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
 
 // const Canvas = ({ broadcast, lines, setLines }) => {
-const Canvas = ({ broadcast, shapes, setShapes, user }) => {
+const Canvas = ({ shapes, setShapes, user }) => {
   const [tool, setTool] = useState("pen");
   const [strokeColor, setStrokeColor] = useState("#abcdef");
   const [fillColor, setFillColor] = useState("#fedcba");
@@ -22,8 +22,16 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [showColorSelectors, setShowColorSelectors] = useState(false);
   const isDrawing = useRef(false);
+  const socket = useContext(SocketContext);
+  const { setUsers } = useContext(UsersContext);
   var lastShape;
   const location = useLocation();
+
+  useEFfect(() => {
+    socket.on("users", (users) => {
+      setUsers(users);
+    });
+  });
 
   const handleMouseDown = (e) => {
     isDrawing.current = true;
@@ -77,7 +85,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
       return;
     }
     setShapes(shapes.concat(lastShape));
-    broadcast(JSON.stringify([...shapes]));
+    socket.emit("sendData", shapes);
   };
 
   const handleMouseMove = (e) => {
@@ -115,7 +123,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
     // console.log(shapes);
     setShapes([...shapes]);
     // console.log(JSON.stringify(shapes.concat()));
-    broadcast(JSON.stringify([...shapes]));
+    socket.emit("sendData", shapes);
   };
 
   const handleMouseUp = () => {
@@ -125,7 +133,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
     lastShape = null;
     setTempId((tempId) => generateId());
     isDrawing.current = false;
-    broadcast(JSON.stringify([...shapes]));
+    socket.emit("sendData", shapes);
   };
 
   function generateId() {
@@ -153,63 +161,57 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
 
   return (
     <div className="Container">
-      <RoomProvider>
-        <UsersProvider>
-          <SocketProvider>
-            <Toolbar items={toolbar_params} />
+      <Toolbar items={toolbar_params} />
 
-            {showColorSelectors && (
-              <div className="Color-Selectors">
-                <div className="Stroke">
-                  <p>Stroke Color</p>
-                  <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
-                </div>
-                <div className="Fill">
-                  <p>Fill Color</p>
-                  <HexColorPicker color={fillColor} onChange={setFillColor} />
-                </div>
+      {showColorSelectors && (
+        <div className="Color-Selectors">
+          <div className="Stroke">
+            <p>Stroke Color</p>
+            <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
+          </div>
+          <div className="Fill">
+            <p>Fill Color</p>
+            <HexColorPicker color={fillColor} onChange={setFillColor} />
+          </div>
+        </div>
+      )}
+
+      <div className="Canvas-Container">
+        <Stage
+          className="Canvas"
+          width={width - 120}
+          height={height - 120}
+          onMouseDown={handleMouseDown}
+          onMousemove={handleMouseMove}
+          onMouseup={handleMouseUp}
+        >
+          <Layer>
+            <Text text="Just start drawing" x={5} y={30} />
+            {shapes.map((shape, i) => (
+              <Shape key={i} shape={shape} />
+            ))}
+          </Layer>
+        </Stage>
+        <section className="options">
+          <div className="tools">
+            <div style={{ fontSize: "2em" }}>Tool: {tool}</div>
+
+            <div>
+              <div>Stroke width</div>
+              <div>
+                <input
+                  type="number"
+                  value={strokeWidth}
+                  id="strokebox"
+                  onChange={(e) => {
+                    setStrokeWidth(parseInt(e.target.value));
+                  }}
+                ></input>
               </div>
-            )}
-
-            <div className="Canvas-Container">
-              <Stage
-                className="Canvas"
-                width={width - 120}
-                height={height - 120}
-                onMouseDown={handleMouseDown}
-                onMousemove={handleMouseMove}
-                onMouseup={handleMouseUp}
-              >
-                <Layer>
-                  <Text text="Just start drawing" x={5} y={30} />
-                  {shapes.map((shape, i) => (
-                    <Shape key={i} shape={shape} />
-                  ))}
-                </Layer>
-              </Stage>
-              <section className="options">
-                <div className="tools">
-                  <div style={{ fontSize: "2em" }}>Tool: {tool}</div>
-
-                  <div>
-                    <div>Stroke width</div>
-                    <div>
-                      <input
-                        type="number"
-                        value={strokeWidth}
-                        id="strokebox"
-                        onChange={(e) => {
-                          setStrokeWidth(parseInt(e.target.value));
-                        }}
-                      ></input>
-                    </div>
-                  </div>
-                </div>
-              </section>
             </div>
-          </SocketProvider>
-        </UsersProvider>
-      </RoomProvider>
+          </div>
+        </section>
+      </div>
     </div>
   );
 };
