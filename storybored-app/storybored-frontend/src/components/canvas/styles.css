@@ -8,8 +8,53 @@
   position: relative;
 }
 
-.options .react-colorful {
+.Canvas-Container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  flex-direction: column;
+}
+
+.Canvas {
+  margin: 0 auto;
+  border: black solid 1px;
+}
+
+.Toolbar {
+  display: flex;
+  justify-content:flex-start;
+  align-items: center;
+  flex-direction: column;
+  width: 5%;
+  margin-left: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: solid black 1px;
+  
+}
+
+.Toolbar-Item {
+  border: solid black 1px;
+  max-height: 100px;
+  font-size: xx-large;
+}
+
+.Container {
+  display: flex;
+  flex-direction: row;
+}
+
+.Color-Selectors {
+  text-align: center;
+}
+
+.Color-Selectors .react-colorful{
   padding: 20px;
   width: 80px;
   height: 80px;
+}
+
+.Color-Selectors p {
+  margin: 0 auto;
 }

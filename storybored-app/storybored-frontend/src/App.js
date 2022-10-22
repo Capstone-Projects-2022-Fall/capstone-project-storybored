@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
 
 import Canvas from "./components/canvas/Canvas";
+import Home from './components/Home.js' ;
+import CreateRoom from './components/CreateRoom';
 
 import axios from "axios";
+
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
 const App = ({ context, url  }) => {
   //const [lines, setLines] = useState([]);
@@ -121,10 +125,20 @@ const App = ({ context, url  }) => {
   }
 
   return (
-    <div>
-      {/* <Canvas broadcast={broadcast} lines={lines} setLines={setLines} /> */}
-      <Canvas broadcast={broadcast} shapes={shapes} setShapes={setShapes} user={context.username} />
+
+    <div className="App">
+        <header className="App-header">
+            <Router>
+                <Routes>
+                    <Route path='' element={<Home />}/>
+                    <Route path='/CreateRoom' element={<CreateRoom />} />
+                    {/* <Canvas broadcast={broadcast} lines={lines} setLines={setLines} /> */}
+                    <Route path ='/Canvas' element={<Canvas broadcast={broadcast} shapes={shapes} setShapes={setShapes} user={context.username} />} />
+                </Routes>
+            </Router>
+        </header>
     </div>
+
   );
 };
 

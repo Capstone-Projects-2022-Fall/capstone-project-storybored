@@ -1,8 +1,14 @@
 import React, { useState, useRef } from "react";
 import { Stage, Layer, Text } from "react-konva";
 import { HexColorPicker } from "react-colorful";
+import { useLocation } from "react-router-dom";
+import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from 'react-icons/gi'
 import Shape from "../shape/Shape";
+import Toolbar from "../Toolbar.js"
 import "./styles.css";
+
+const width = window.innerWidth
+const height = window.innerHeight
 
 // const Canvas = ({ broadcast, lines, setLines }) => {
 const Canvas = ({ broadcast, shapes, setShapes, user }) => {
@@ -11,8 +17,10 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
   const [fillColor, setFillColor] = useState("#fedcba");
   const [tempId, setTempId] = useState((tempId) => (tempId = generateId()));
   const [strokeWidth, setStrokeWidth] = useState(2);
+  const [showColorSelectors, setShowColorSelectors] = useState(false) 
   const isDrawing = useRef(false);
   var lastShape;
+  const location = useLocation();
 
   const handleMouseDown = (e) => {
     isDrawing.current = true;
@@ -128,61 +136,71 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
   //   console.log(e.target.toString());
   // };
 
+  const setPen = () => setTool('pen')
+  const setRect = () => setTool('rectangle')
+  const setCircle = () => setTool('circle')
+  const toggleColorSelectors = () => {
+    setShowColorSelectors(prevState => !prevState)
+  }
+  
+  //Array containing objects for the toolbar; each object has an onClick function and an icon
+  const toolbar_params = [ {func: setPen, icon: <GiPencil />},
+                          {func: setRect, icon: <GiSquare />},
+                          {func: setCircle, icon: <GiCircle />},
+                           {func: toggleColorSelectors, icon: <GiLargePaintBrush />}]
+
   return (
-    <div>
-      <Stage
-        width={window.innerWidth}
-        height={window.innerHeight - 120}
-        onMouseDown={handleMouseDown}
-        onMousemove={handleMouseMove}
-        onMouseup={handleMouseUp}
-      >
-        <Layer>
-          <Text text="Just start drawing" x={5} y={30} />
-          {shapes.map((shape, i) => (
-            <Shape key={i} shape={shape} />
-          ))}
-        </Layer>
-      </Stage>
-      <section className="options">
-        <div>
-          Stroke Color
-          <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
-        </div>
-        <div>
-          Fill Color
-          <HexColorPicker color={fillColor} onChange={setFillColor} />
-        </div>
-        <div className="tools">
-          <div>Tool</div>
-          <div>
-            <select
-              value={tool}
-              onChange={(e) => {
-                setTool(e.target.value);
-              }}
-            >
-              <option value="pen">Pen</option>
-              <option value="rectangle">Rectangle</option>
-              <option value="circle">Circle</option>
-              <option value="eraser">Eraser</option>
-            </select>
+    <div className='Container'>
+      <Toolbar items={toolbar_params} />
+
+      {showColorSelectors && 
+        <div className="Color-Selectors">
+          <div className="Stroke">
+            <p>Stroke Color</p>
+            <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
           </div>
-          <div>
-            <div>Stroke width</div>
+          <div className="Fill">
+            <p>Fill Color</p>
+            <HexColorPicker color={fillColor} onChange={setFillColor} />
+          </div>
+        </div> }
+
+      <div className = 'Canvas-Container'>
+        <Stage className='Canvas'
+          width={width - 120}
+          height={height - 120}
+          onMouseDown={handleMouseDown}
+          onMousemove={handleMouseMove}
+          onMouseup={handleMouseUp}
+        >
+          <Layer>
+            <Text text="Just start drawing" x={5} y={30} />
+            {shapes.map((shape, i) => (
+              <Shape key={i} shape={shape} />
+            ))}
+          </Layer>
+        </Stage>
+        <section className="options">
+
+          <div className="tools">
+            <div style={{fontSize: '2em'}}>Tool: {tool}</div>
+            
             <div>
-              <input
-                type="number"
-                value={strokeWidth}
-                id="strokebox"
-                onChange={(e) => {
-                  setStrokeWidth(parseInt(e.target.value));
-                }}
-              ></input>
+              <div>Stroke width</div>
+              <div>
+                <input
+                  type="number"
+                  value={strokeWidth}
+                  id="strokebox"
+                  onChange={(e) => {
+                    setStrokeWidth(parseInt(e.target.value));
+                  }}
+                ></input>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 };
