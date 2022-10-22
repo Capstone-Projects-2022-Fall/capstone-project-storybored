@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 
 import Canvas from "./components/canvas/Canvas";
-import Home from './components/Home.js' ;
-import CreateRoom from './components/CreateRoom';
+import Home from "./components/Home.js";
+import CreateRoom from "./components/CreateRoom";
 
 import axios from "axios";
 
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
-const App = ({ context, url  }) => {
-  //const [lines, setLines] = useState([]);
+const App = ({ context, url }) => {
   const [shapes, setShapes] = useState([]);
 
   const rtcConfig = {
@@ -36,7 +35,7 @@ const App = ({ context, url  }) => {
     let peer = new RTCPeerConnection(rtcConfig);
     context.peers[message.peer.id] = peer;
 
-    peer.onicecandidate = function (event) {
+    peer.onicecandidate = function(event) {
       if (event.candidate) {
         // was missing second parameter 'ice-candidate' in relay function
         relay(message.peer.id, "ice-candidate", event.candidate);
@@ -46,15 +45,15 @@ const App = ({ context, url  }) => {
     if (message.offer) {
       // create the data channel, map peer updates
       let channel = peer.createDataChannel("updates");
-      channel.onmessage = function (event) {
+      channel.onmessage = function(event) {
         onPeerData(message.peer.id, event.data);
       };
       context.channels[message.peer.id] = channel;
       createOffer(message.peer.id, peer);
     } else {
-      peer.ondatachannel = function (event) {
+      peer.ondatachannel = function(event) {
         context.channels[message.peer.id] = event.channel;
-        event.channel.onmessage = function (evt) {
+        event.channel.onmessage = function(evt) {
           onPeerData(message.peer.id, evt.data);
         };
       };
@@ -125,20 +124,18 @@ const App = ({ context, url  }) => {
   }
 
   return (
-
     <div className="App">
-        <header className="App-header">
-            <Router>
-                <Routes>
-                    <Route path='' element={<Home />}/>
-                    <Route path='/CreateRoom' element={<CreateRoom />} />
-                    {/* <Canvas broadcast={broadcast} lines={lines} setLines={setLines} /> */}
-                    <Route path ='/Canvas' element={<Canvas broadcast={broadcast} shapes={shapes} setShapes={setShapes} user={context.username} />} />
-                </Routes>
-            </Router>
-        </header>
+      <header className="App-header">
+        <Router>
+          <Routes>
+            <Route path="" element={<Home />} />
+            <Route path="/CreateRoom" element={<CreateRoom />} />
+            {/* <Canvas broadcast={broadcast} lines={lines} setLines={setLines} /> */}
+            <Route path="/Canvas" element={<Canvas broadcast={broadcast} shapes={shapes} setShapes={setShapes} user={context.username} />} />
+          </Routes>
+        </Router>
+      </header>
     </div>
-
   );
 };
 

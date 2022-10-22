@@ -2,13 +2,16 @@ import React, { useState, useRef } from "react";
 import { Stage, Layer, Text } from "react-konva";
 import { HexColorPicker } from "react-colorful";
 import { useLocation } from "react-router-dom";
-import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from 'react-icons/gi'
+import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
 import Shape from "../shape/Shape";
-import Toolbar from "../Toolbar.js"
+import Toolbar from "../Toolbar.js";
 import "./styles.css";
+import { SocketProvider } from "../../socketContext";
+import { RoomProvider } from "../../roomContext";
+import { UsersProvider } from "../../usersContext";
 
-const width = window.innerWidth
-const height = window.innerHeight
+const width = window.innerWidth;
+const height = window.innerHeight;
 
 // const Canvas = ({ broadcast, lines, setLines }) => {
 const Canvas = ({ broadcast, shapes, setShapes, user }) => {
@@ -17,7 +20,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
   const [fillColor, setFillColor] = useState("#fedcba");
   const [tempId, setTempId] = useState((tempId) => (tempId = generateId()));
   const [strokeWidth, setStrokeWidth] = useState(2);
-  const [showColorSelectors, setShowColorSelectors] = useState(false) 
+  const [showColorSelectors, setShowColorSelectors] = useState(false);
   const isDrawing = useRef(false);
   var lastShape;
   const location = useLocation();
@@ -36,7 +39,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
         tension: 0.5,
         lineCap: "round",
         draggable: false,
-        user: user
+        user: user,
       };
     }
     if (tool === "rectangle") {
@@ -52,7 +55,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
         height: 5,
         draggable: false,
         listening: false,
-        user: user
+        user: user,
       };
     }
     if (tool === "circle") {
@@ -67,7 +70,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
         radius: 4,
         draggable: false,
         listening: false,
-        user: user
+        user: user,
       };
     }
     if (tool === "eraser") {
@@ -84,9 +87,9 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
     }
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
-    
+
     // let index = shapes.findIndex((element) => element.id === tempId);
-    let index = shapes.findLastIndex(element => element.user===user)
+    let index = shapes.findLastIndex((element) => element.user === user);
 
     if (tool === "pen") {
       let tempLine = shapes[index];
@@ -126,81 +129,87 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
   };
 
   function generateId() {
-    const result = Math.random()
-      .toString(36)
-      .substring(2, 9);
-    return result;
+    const result = new Date().getTime().toString();
   }
 
   // const handleMouseOver = (e) => {
   //   console.log(e.target.toString());
   // };
 
-  const setPen = () => setTool('pen')
-  const setRect = () => setTool('rectangle')
-  const setCircle = () => setTool('circle')
+  const setPen = () => setTool("pen");
+  const setRect = () => setTool("rectangle");
+  const setCircle = () => setTool("circle");
   const toggleColorSelectors = () => {
-    setShowColorSelectors(prevState => !prevState)
-  }
-  
+    setShowColorSelectors((prevState) => !prevState);
+  };
+
   //Array containing objects for the toolbar; each object has an onClick function and an icon
-  const toolbar_params = [ {func: setPen, icon: <GiPencil />},
-                          {func: setRect, icon: <GiSquare />},
-                          {func: setCircle, icon: <GiCircle />},
-                           {func: toggleColorSelectors, icon: <GiLargePaintBrush />}]
+  const toolbar_params = [
+    { func: setPen, icon: <GiPencil /> },
+    { func: setRect, icon: <GiSquare /> },
+    { func: setCircle, icon: <GiCircle /> },
+    { func: toggleColorSelectors, icon: <GiLargePaintBrush /> },
+  ];
 
   return (
-    <div className='Container'>
-      <Toolbar items={toolbar_params} />
+    <div className="Container">
+      <RoomProvider>
+        <UsersProvider>
+          <SocketProvider>
+            <Toolbar items={toolbar_params} />
 
-      {showColorSelectors && 
-        <div className="Color-Selectors">
-          <div className="Stroke">
-            <p>Stroke Color</p>
-            <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
-          </div>
-          <div className="Fill">
-            <p>Fill Color</p>
-            <HexColorPicker color={fillColor} onChange={setFillColor} />
-          </div>
-        </div> }
-
-      <div className = 'Canvas-Container'>
-        <Stage className='Canvas'
-          width={width - 120}
-          height={height - 120}
-          onMouseDown={handleMouseDown}
-          onMousemove={handleMouseMove}
-          onMouseup={handleMouseUp}
-        >
-          <Layer>
-            <Text text="Just start drawing" x={5} y={30} />
-            {shapes.map((shape, i) => (
-              <Shape key={i} shape={shape} />
-            ))}
-          </Layer>
-        </Stage>
-        <section className="options">
-
-          <div className="tools">
-            <div style={{fontSize: '2em'}}>Tool: {tool}</div>
-            
-            <div>
-              <div>Stroke width</div>
-              <div>
-                <input
-                  type="number"
-                  value={strokeWidth}
-                  id="strokebox"
-                  onChange={(e) => {
-                    setStrokeWidth(parseInt(e.target.value));
-                  }}
-                ></input>
+            {showColorSelectors && (
+              <div className="Color-Selectors">
+                <div className="Stroke">
+                  <p>Stroke Color</p>
+                  <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
+                </div>
+                <div className="Fill">
+                  <p>Fill Color</p>
+                  <HexColorPicker color={fillColor} onChange={setFillColor} />
+                </div>
               </div>
+            )}
+
+            <div className="Canvas-Container">
+              <Stage
+                className="Canvas"
+                width={width - 120}
+                height={height - 120}
+                onMouseDown={handleMouseDown}
+                onMousemove={handleMouseMove}
+                onMouseup={handleMouseUp}
+              >
+                <Layer>
+                  <Text text="Just start drawing" x={5} y={30} />
+                  {shapes.map((shape, i) => (
+                    <Shape key={i} shape={shape} />
+                  ))}
+                </Layer>
+              </Stage>
+              <section className="options">
+                <div className="tools">
+                  <div style={{ fontSize: "2em" }}>Tool: {tool}</div>
+
+                  <div>
+                    <div>Stroke width</div>
+                    <div>
+                      <input
+                        type="number"
+                        value={strokeWidth}
+                        id="strokebox"
+                        onChange={(e) => {
+                          setStrokeWidth(parseInt(e.target.value));
+                        }}
+                      ></input>
+                    </div>
+                  </div>
+                </div>
+              </section>
             </div>
-          </div>
-        </section>
-      </div>
+          </SocketProvider>
+        </UsersProvider>
+      </RoomProvider>
     </div>
   );
 };

@@ -1,5 +1,4 @@
-
-version: '1'
+version: "1"
 services:
   storyboredFront:
     image: "storybored-frontend:0.1"
@@ -10,7 +9,6 @@ services:
     ports:
       - "7007:7007"
   redis:
-    image: "redis:alpine"
+    image: "redis"
     ports:
       - "6379:6379"
-  
