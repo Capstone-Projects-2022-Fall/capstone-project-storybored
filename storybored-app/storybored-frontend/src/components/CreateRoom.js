@@ -12,7 +12,8 @@ const CreateRoom = () => {
   const { nickname, room, setNickName, setRoom } = useContext(RoomContext);
 
   const navToCanvas = () => {
-    let nick = new Date.getTime().toString();
+    let date = new Date();
+    let nick = date.getTime().toString();
     socket.emit("join", { nick, room }, (error) => {
       if (error) {
         console.log(error);

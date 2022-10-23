@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext, useEFfect } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 import { Stage, Layer, Text } from "react-konva";
 import { HexColorPicker } from "react-colorful";
 import { useLocation } from "react-router-dom";
@@ -27,11 +27,11 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
   var lastShape;
   const location = useLocation();
 
-  useEFfect(() => {
+  useEffect(() => {
     socket.on("users", (users) => {
       setUsers(users);
     });
-  });
+  }, [socket]);
 
   const handleMouseDown = (e) => {
     isDrawing.current = true;
