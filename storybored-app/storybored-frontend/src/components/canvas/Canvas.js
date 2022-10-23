@@ -14,7 +14,7 @@ const width = window.innerWidth;
 const height = window.innerHeight;
 
 // const Canvas = ({ broadcast, lines, setLines }) => {
-const Canvas = ({ broadcast, shapes, setShapes }) => {
+const Canvas = ({ shapes, setShapes }) => {
   const [tool, setTool] = useState("pen");
   const [strokeColor, setStrokeColor] = useState("#abcdef");
   const [fillColor, setFillColor] = useState("#fedcba");
@@ -30,6 +30,12 @@ const Canvas = ({ broadcast, shapes, setShapes }) => {
   useEffect(() => {
     socket.on("users", (users) => {
       setUsers(users);
+    });
+    socket.on("message", (msg) => {
+      console.log(msg);
+    });
+    socket.on("notification", (notif) => {
+      console.log(notif);
     });
   }, [socket]);
 

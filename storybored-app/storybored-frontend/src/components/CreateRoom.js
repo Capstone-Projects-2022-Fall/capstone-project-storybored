@@ -13,8 +13,8 @@ const CreateRoom = () => {
 
   const navToCanvas = () => {
     let date = new Date();
-    let nick = date.getTime().toString();
-    socket.emit("join", { nick, room }, (error) => {
+    let nickname = date.getTime().toString();
+    socket.emit("join", { nickname, room }, (error) => {
       if (error) {
         console.log(error);
         return;

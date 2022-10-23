@@ -13,7 +13,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 const App = ({ context, url }) => {
   // const { nickName, room, setNickName, setRoom } = useContext(RoomContext);
-  // const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext);
   // const { users } = useContext(UsersContext);
   const [shapes, setShapes] = useState([]);
 
