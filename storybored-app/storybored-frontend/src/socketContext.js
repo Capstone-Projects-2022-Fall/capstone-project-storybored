@@ -5,7 +5,7 @@ const SocketContext = React.createContext();
 
 const SocketProvider = ({ children }) => {
   const ENDPOINT = "http://localhost:7007";
-  const socket = io(ENDPOINT, { transports: ["polling", "websocket"] });
+  const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
   return <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>;
 };
 

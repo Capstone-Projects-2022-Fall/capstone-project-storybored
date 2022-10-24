@@ -2,18 +2,18 @@ import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { SocketContext } from "../socketContext";
 import { RoomContext } from "../roomContext";
-import { UsersContext } from "../usersContext";
+// import { UsersContext } from "../usersContext";
 
 const CreateRoom = () => {
-  let canvasSizeValue = 0;
+//   let canvasSizeValue = 0;
   const navigate = useNavigate();
   const socket = useContext(SocketContext);
-  const { setUsers } = useContext(UsersContext);
-  const { nickname, room, setNickName, setRoom } = useContext(RoomContext);
+//   const { setUsers } = useContext(UsersContext);
+  const { room } = useContext(RoomContext);
 
   const navToCanvas = () => {
     let date = new Date();
-    let nickname = date.getTime().toString();
+    let nickname = date.getTime().toString(36);
     socket.emit("join", { nickname, room }, (error) => {
       if (error) {
         console.log(error);

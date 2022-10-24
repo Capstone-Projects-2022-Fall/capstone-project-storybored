@@ -4,16 +4,11 @@ var path = require("path");
 var jwt = require("jsonwebtoken");
 var uuid = require("uuid");
 var dotenv = require("dotenv").config();
-// var redis = require("ioredis");
-var bluebird = require("bluebird");
 var cors = require("cors");
-const { Socket } = require("dgram");
-const { callbackify } = require("util");
 //
 
 const PORT = 7007;
 
-// let address = "127.0.0.0";
 
 /**
  * Creates endpoints for HTTP response and requests.
@@ -55,10 +50,6 @@ const removeUser = (id) => {
   }
 };
 
-/**
- * Used to listen for API calls on selected port
- */
-
 
 //creating event handlers for socket message received events
 io.on("connection", (socket) => {
@@ -67,8 +58,8 @@ io.on("connection", (socket) => {
     if (error) {
       return callback(error);
     }
-    console.log(`${user.name} joined`);
-    socket.broadcast.emit("notification", { title: "Someone joined", description: `${user.name} joined` });
+    console.log(`${user.nickname} joined`);
+    socket.broadcast.emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
     io.emit("users", getUsers());
     callback();
   });
