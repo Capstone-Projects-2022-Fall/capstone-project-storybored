@@ -21,17 +21,22 @@ app.locals.index = 1000000000;
 const connected_clients = []; //const refernce, mutable array
 const server = http.createServer(app);
 const io = require("socket.io")(server,
-  { cors:{
-    origin: "*",
-    }});
+  {
+    cors: {
+      origin: "*",
+    }
+  });
 
 const addUser = (id, nickname, room) => {
 
+  for (c in connected_clients) {
+    if (c.id === id) { return; }
+  }
   if (!nickname) return { error: "Username is required" }
   if (!room) return { error: "Room is required" }
   const user = { id, nickname, room };
   connected_clients.push(user);
-  return {user};
+  return { user };
 };
 
 const getUser = (id) => {
@@ -66,7 +71,7 @@ io.on("connection", (socket) => {
 
   socket.on("sendData", (data) => {
     const user = getUser(socket.id);
-    if(!user) return;
+    if (!user) return;
     io.emit("message", { user: user.nickname, text: data });
   });
 
@@ -81,7 +86,7 @@ io.on("connection", (socket) => {
 });
 
 app.get("/", (req, res) => {
-  req.send("Server is up");
+  // req.send("Server is up");
 });
 
 server.listen(PORT, () => {

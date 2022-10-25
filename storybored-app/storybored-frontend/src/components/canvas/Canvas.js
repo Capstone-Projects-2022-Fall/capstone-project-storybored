@@ -5,11 +5,26 @@ import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi"
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
 import "./styles.css";
-import { SocketContext} from "../../socketContext";
-import { UsersContext} from "../../usersContext";
+// import { SocketContext } from "../../socketContext";
+import { UsersContext } from "../../usersContext";
+import io from 'socket.io-client'
 
 const width = window.innerWidth;
 const height = window.innerHeight;
+const ENDPOINT = "http://localhost:7007";
+const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
+const date = new Date();
+const nickname = date.getTime().toString(36);
+const room = 4;
+const test = socket.emit("join", { nickname, room }, (error) => {
+  if (error) {
+    console.log(error);
+    return;
+  } else {
+    console.log("joined server");
+  }
+  return;
+});
 
 const Canvas = ({ shapes, setShapes }) => {
   const [tool, setTool] = useState("pen");
@@ -19,14 +34,15 @@ const Canvas = ({ shapes, setShapes }) => {
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [showColorSelectors, setShowColorSelectors] = useState(false);
   const isDrawing = useRef(false);
-  const socket = useContext(SocketContext);
+  // const socket = useContext(SocketContext);
   const { setUsers } = useContext(UsersContext);
   var lastShape;
   // const location = useLocation();
 
   useEffect(() => {
+
     socket.on("users", (users) => {
-      setUsers(users);
+      console.log(users);
     });
     socket.on("message", (msg) => {
       console.log(msg);
@@ -34,6 +50,11 @@ const Canvas = ({ shapes, setShapes }) => {
     socket.on("notification", (notif) => {
       console.log(notif.description);
     });
+    return () => {
+      socket.off("notification");
+      socket.off("message");
+      socket.off("users");
+    }
   }, [socket]);
 
   const handleMouseDown = (e) => {
@@ -88,7 +109,7 @@ const Canvas = ({ shapes, setShapes }) => {
       return;
     }
     setShapes(shapes.concat(lastShape));
-    // socket.emit("sendData", JSON.stringify([...shapes]));
+    socket.emit("sendData", JSON.stringify([...shapes]));
   };
 
   const handleMouseMove = (e) => {
@@ -126,7 +147,7 @@ const Canvas = ({ shapes, setShapes }) => {
     // console.log(shapes);
     setShapes([...shapes]);
     // console.log(JSON.stringify(shapes.concat()));
-    // socket.emit("sendData", JSON.stringify([...shapes]));
+    socket.emit("sendData", JSON.stringify([...shapes]));
   };
 
   const handleMouseUp = () => {
@@ -136,7 +157,7 @@ const Canvas = ({ shapes, setShapes }) => {
     lastShape = null;
     setTempId((tempId) => generateId());
     isDrawing.current = false;
-    // socket.emit("sendData", JSON.stringify([...shapes]));
+    socket.emit("sendData", JSON.stringify([...shapes]));
   };
 
   function generateId() {
@@ -191,7 +212,6 @@ const Canvas = ({ shapes, setShapes }) => {
           onMouseup={handleMouseUp}
         >
           <Layer>
-            <Text text="Just start drawing" x={5} y={30} />
             {shapes.map((shape, i) => (
               <Shape key={i} shape={shape} />
             ))}
