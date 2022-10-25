@@ -45,7 +45,10 @@ const Canvas = ({ shapes, setShapes }) => {
       console.log(users);
     });
     socket.on("message", (msg) => {
-      console.log(msg);
+      let show = JSON.parse(msg.text);
+      console.log(show);
+      // console.log([...shapes])
+      setShapes(shapes.concat(show));
     });
     socket.on("notification", (notif) => {
       console.log(notif.description);
@@ -55,7 +58,7 @@ const Canvas = ({ shapes, setShapes }) => {
       socket.off("message");
       socket.off("users");
     }
-  }, [socket]);
+  }, [socket, shapes, setShapes]);
 
   const handleMouseDown = (e) => {
     isDrawing.current = true;
@@ -109,7 +112,7 @@ const Canvas = ({ shapes, setShapes }) => {
       return;
     }
     setShapes(shapes.concat(lastShape));
-    socket.emit("sendData", JSON.stringify([...shapes]));
+    socket.emit("sendData", JSON.stringify(lastShape));
   };
 
   const handleMouseMove = (e) => {
@@ -147,17 +150,18 @@ const Canvas = ({ shapes, setShapes }) => {
     // console.log(shapes);
     setShapes([...shapes]);
     // console.log(JSON.stringify(shapes.concat()));
-    socket.emit("sendData", JSON.stringify([...shapes]));
+    socket.emit("sendData", JSON.stringify(shapes[index]));
   };
 
   const handleMouseUp = () => {
+    let index = shapes.findLastIndex((element) => element.user === "test");
     // if (tool === "select") {
     //   return;
     // }
     lastShape = null;
     setTempId((tempId) => generateId());
     isDrawing.current = false;
-    socket.emit("sendData", JSON.stringify([...shapes]));
+    socket.emit("sendData", JSON.stringify(shapes[index]));
   };
 
   function generateId() {

@@ -79,7 +79,7 @@ io.on("connection", (socket) => {
     const user = removeUser(socket.id);
     if (user) {
       console.log("user disconnected from server");
-      io.emit("notification", { title: "Someone left", description: `${user.name} left` });
+      io.emit("notification", { title: "Someone left", description: `${user.nickname} left` });
       io.emit("users", getUsers());
     }
   });
