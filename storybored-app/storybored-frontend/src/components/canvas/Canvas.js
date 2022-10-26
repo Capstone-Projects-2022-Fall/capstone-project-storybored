@@ -40,15 +40,22 @@ const Canvas = ({ shapes, setShapes }) => {
   // const location = useLocation();
 
   useEffect(() => {
-
     socket.on("users", (users) => {
       console.log(users);
     });
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
-      console.log(show);
-      // console.log([...shapes])
-      setShapes(shapes.concat(show));
+      // console.log(show);
+      let index = shapes.findLastIndex((element) => element.id === show.id);
+      console.log(index);
+      if (index < 0) {
+        console.log("here");
+        setShapes(shapes.concat(show));
+      } else {
+        console.log("there");
+        shapes[index] = show;
+        setShapes([...shapes])
+      }
     });
     socket.on("notification", (notif) => {
       console.log(notif.description);
