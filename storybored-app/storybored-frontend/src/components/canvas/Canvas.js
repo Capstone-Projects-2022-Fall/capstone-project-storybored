@@ -1,5 +1,5 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
-import { Stage, Layer, Text } from "react-konva";
+import { Stage, Layer } from "react-konva";
 import { HexColorPicker } from "react-colorful";
 import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
 import Shape from "../shape/Shape";
@@ -9,9 +9,13 @@ import "./styles.css";
 import { UsersContext } from "../../usersContext";
 import io from 'socket.io-client'
 
+//DOCKER BUILD docker build -t storybored-frontend:0.1 .
+//pass empty array to useeffect for socket join and other one time events.
+//if passed socket, shape, etc, change every time that that component updates
+
 const width = window.innerWidth;
 const height = window.innerHeight;
-const ENDPOINT = "http://localhost:7007";
+const ENDPOINT = "139.144.172.98";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 const date = new Date();
 const nickname = date.getTime().toString(36);
@@ -40,19 +44,16 @@ const Canvas = ({ shapes, setShapes }) => {
   // const location = useLocation();
 
   useEffect(() => {
+
     socket.on("users", (users) => {
       console.log(users);
     });
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
-      // console.log(show);
       let index = shapes.findLastIndex((element) => element.id === show.id);
-      console.log(index);
       if (index < 0) {
-        console.log("here");
         setShapes(shapes.concat(show));
       } else {
-        console.log("there");
         shapes[index] = show;
         setShapes([...shapes])
       }

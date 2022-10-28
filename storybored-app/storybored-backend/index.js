@@ -9,6 +9,7 @@ var cors = require("cors");
 
 const PORT = 7007;
 
+// docker build -t storybored-backend:0.1 .
 
 /**
  * Creates endpoints for HTTP response and requests.
@@ -23,7 +24,8 @@ const server = http.createServer(app);
 const io = require("socket.io")(server,
   {
     cors: {
-      origin: "*",
+      origin: "http://localhost",
+      origin: "10.128.0.4"
     }
   });
 
