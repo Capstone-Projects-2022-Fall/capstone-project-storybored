@@ -8,25 +8,17 @@ import "./styles.css";
 // import { SocketContext } from "../../socketContext";
 import { UsersContext } from "../../usersContext";
 import io from 'socket.io-client'
+import {NotificationContainer, NotificationManager} from 'react-notifications';
 
 const width = window.innerWidth;
 const height = window.innerHeight;
 const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 const date = new Date();
-const nickname = date.getTime().toString(36);
 const room = 4;
-const test = socket.emit("join", { nickname, room }, (error) => {
-  if (error) {
-    console.log(error);
-    return;
-  } else {
-    console.log("joined server");
-  }
-  return;
-});
 
-const Canvas = ({ shapes, setShapes }) => {
+
+const Canvas = ({ shapes, setShapes, username }) => {
   const [tool, setTool] = useState("pen");
   const [strokeColor, setStrokeColor] = useState("#abcdef");
   const [fillColor, setFillColor] = useState("#fedcba");
@@ -38,6 +30,17 @@ const Canvas = ({ shapes, setShapes }) => {
   const { setUsers } = useContext(UsersContext);
   var lastShape;
   // const location = useLocation();
+
+  const nickname = username;
+  const test = useEffect(() => {socket.emit("join", { nickname, room }, (error) => {
+    if (error) {
+      console.log(error);
+      return;
+    } else {
+      console.log("joined server");
+    }
+    return;
+  })}, []);
 
   useEffect(() => {
     socket.on("users", (users) => {
@@ -59,6 +62,7 @@ const Canvas = ({ shapes, setShapes }) => {
     });
     socket.on("notification", (notif) => {
       console.log(notif.description);
+      NotificationManager.info(notif.description, '', 10000)
     });
     return () => {
       socket.off("notification");
@@ -247,6 +251,10 @@ const Canvas = ({ shapes, setShapes }) => {
             </div>
           </div>
         </section>
+      </div>
+
+      <div className="NotificationContainer">
+        <NotificationContainer />
       </div>
     </div>
   );

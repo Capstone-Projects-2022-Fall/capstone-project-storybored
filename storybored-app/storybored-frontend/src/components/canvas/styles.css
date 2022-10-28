@@ -58,3 +58,11 @@
 .Color-Selectors p {
   margin: 0 auto;
 }
+
+.Container .NotificationContainer {
+  border: solid black 1px;
+  width: 120px;
+  max-width:120px;
+  margin: 0.5em;
+  margin-top: 0;
+}
