@@ -5,8 +5,4 @@ services:
     image: "storybored-app:0.1"
     ports:
       - "7007:7007"
-  redis:
-    image: "redis:alpine"
-    ports:
-      - "6379:6379"
   

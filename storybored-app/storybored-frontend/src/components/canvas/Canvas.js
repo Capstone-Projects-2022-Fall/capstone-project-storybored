@@ -1,26 +1,72 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 import { Stage, Layer, Text } from "react-konva";
 import { HexColorPicker } from "react-colorful";
-import { useLocation } from "react-router-dom";
-import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from 'react-icons/gi'
+import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
 import Shape from "../shape/Shape";
-import Toolbar from "../Toolbar.js"
+import Toolbar from "../Toolbar.js";
 import "./styles.css";
+// import { SocketContext } from "../../socketContext";
+import { UsersContext } from "../../usersContext";
+import io from 'socket.io-client'
 
-const width = window.innerWidth
-const height = window.innerHeight
+const width = window.innerWidth;
+const height = window.innerHeight;
+const ENDPOINT = "139.144.172.98:7007"
+// const ENDPOINT = "http://localhost:7007";
+const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
+const date = new Date();
+const nickname = date.getTime().toString(36);
+const room = 4;
+const test = socket.emit("join", { nickname, room }, (error) => {
+  if (error) {
+    console.log(error);
+    return;
+  } else {
+    console.log("joined server");
+  }
+  return;
+});
 
-// const Canvas = ({ broadcast, lines, setLines }) => {
-const Canvas = ({ broadcast, shapes, setShapes, user }) => {
+const Canvas = ({ shapes, setShapes }) => {
   const [tool, setTool] = useState("pen");
   const [strokeColor, setStrokeColor] = useState("#abcdef");
   const [fillColor, setFillColor] = useState("#fedcba");
   const [tempId, setTempId] = useState((tempId) => (tempId = generateId()));
   const [strokeWidth, setStrokeWidth] = useState(2);
-  const [showColorSelectors, setShowColorSelectors] = useState(false) 
+  const [showColorSelectors, setShowColorSelectors] = useState(false);
   const isDrawing = useRef(false);
+  // const socket = useContext(SocketContext);
+  const { setUsers } = useContext(UsersContext);
   var lastShape;
-  const location = useLocation();
+  // const location = useLocation();
+
+  useEffect(() => {
+    socket.on("users", (users) => {
+      console.log(users);
+    });
+    socket.on("message", (msg) => {
+      let show = JSON.parse(msg.text);
+      // console.log(show);
+      let index = shapes.findLastIndex((element) => element.id === show.id);
+      console.log(index);
+      if (index < 0) {
+        console.log("here");
+        setShapes(shapes.concat(show));
+      } else {
+        console.log("there");
+        shapes[index] = show;
+        setShapes([...shapes])
+      }
+    });
+    socket.on("notification", (notif) => {
+      console.log(notif.description);
+    });
+    return () => {
+      socket.off("notification");
+      socket.off("message");
+      socket.off("users");
+    }
+  }, [socket, shapes, setShapes]);
 
   const handleMouseDown = (e) => {
     isDrawing.current = true;
@@ -36,7 +82,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
         tension: 0.5,
         lineCap: "round",
         draggable: false,
-        user: user
+        user: "test",
       };
     }
     if (tool === "rectangle") {
@@ -52,7 +98,7 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
         height: 5,
         draggable: false,
         listening: false,
-        user: user
+        user: "test",
       };
     }
     if (tool === "circle") {
@@ -67,14 +113,14 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
         radius: 4,
         draggable: false,
         listening: false,
-        user: user
+        user: "test",
       };
     }
     if (tool === "eraser") {
       return;
     }
     setShapes(shapes.concat(lastShape));
-    broadcast(JSON.stringify([...shapes]));
+    socket.emit("sendData", JSON.stringify(lastShape));
   };
 
   const handleMouseMove = (e) => {
@@ -84,9 +130,9 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
     }
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
-    
+
     // let index = shapes.findIndex((element) => element.id === tempId);
-    let index = shapes.findLastIndex(element => element.user===user)
+    let index = shapes.findLastIndex((element) => element.user === "test");
 
     if (tool === "pen") {
       let tempLine = shapes[index];
@@ -112,48 +158,50 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
     // console.log(shapes);
     setShapes([...shapes]);
     // console.log(JSON.stringify(shapes.concat()));
-    broadcast(JSON.stringify([...shapes]));
+    socket.emit("sendData", JSON.stringify(shapes[index]));
   };
 
   const handleMouseUp = () => {
+    let index = shapes.findLastIndex((element) => element.user === "test");
     // if (tool === "select") {
     //   return;
     // }
     lastShape = null;
     setTempId((tempId) => generateId());
     isDrawing.current = false;
-    broadcast(JSON.stringify([...shapes]));
+    socket.emit("sendData", JSON.stringify(shapes[index]));
   };
 
   function generateId() {
-    const result = Math.random()
-      .toString(36)
-      .substring(2, 9);
-    return result;
+    let d = new Date();
+    let t = d.getTime().toString();
+    return t;
   }
 
   // const handleMouseOver = (e) => {
   //   console.log(e.target.toString());
   // };
 
-  const setPen = () => setTool('pen')
-  const setRect = () => setTool('rectangle')
-  const setCircle = () => setTool('circle')
+  const setPen = () => setTool("pen");
+  const setRect = () => setTool("rectangle");
+  const setCircle = () => setTool("circle");
   const toggleColorSelectors = () => {
-    setShowColorSelectors(prevState => !prevState)
-  }
-  
+    setShowColorSelectors((prevState) => !prevState);
+  };
+
   //Array containing objects for the toolbar; each object has an onClick function and an icon
-  const toolbar_params = [ {func: setPen, icon: <GiPencil />},
-                          {func: setRect, icon: <GiSquare />},
-                          {func: setCircle, icon: <GiCircle />},
-                           {func: toggleColorSelectors, icon: <GiLargePaintBrush />}]
+  const toolbar_params = [
+    { func: setPen, icon: <GiPencil /> },
+    { func: setRect, icon: <GiSquare /> },
+    { func: setCircle, icon: <GiCircle /> },
+    { func: toggleColorSelectors, icon: <GiLargePaintBrush /> },
+  ];
 
   return (
-    <div className='Container'>
+    <div className="Container">
       <Toolbar items={toolbar_params} />
 
-      {showColorSelectors && 
+      {showColorSelectors && (
         <div className="Color-Selectors">
           <div className="Stroke">
             <p>Stroke Color</p>
@@ -163,10 +211,12 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
             <p>Fill Color</p>
             <HexColorPicker color={fillColor} onChange={setFillColor} />
           </div>
-        </div> }
+        </div>
+      )}
 
-      <div className = 'Canvas-Container'>
-        <Stage className='Canvas'
+      <div className="Canvas-Container">
+        <Stage
+          className="Canvas"
           width={width - 120}
           height={height - 120}
           onMouseDown={handleMouseDown}
@@ -174,17 +224,15 @@ const Canvas = ({ broadcast, shapes, setShapes, user }) => {
           onMouseup={handleMouseUp}
         >
           <Layer>
-            <Text text="Just start drawing" x={5} y={30} />
             {shapes.map((shape, i) => (
               <Shape key={i} shape={shape} />
             ))}
           </Layer>
         </Stage>
         <section className="options">
-
           <div className="tools">
-            <div style={{fontSize: '2em'}}>Tool: {tool}</div>
-            
+            <div style={{ fontSize: "2em" }}>Tool: {tool}</div>
+
             <div>
               <div>Stroke width</div>
               <div>
