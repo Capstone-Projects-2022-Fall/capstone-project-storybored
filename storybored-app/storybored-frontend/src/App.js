@@ -15,6 +15,10 @@ const App = ({ context, url }) => {
   // const socket = useContext(SocketContext);
   // const { users } = useContext(UsersContext);
   const [shapes, setShapes] = useState([]);
+  const [username, setUsername] = useState("player")
+  const defineUsername = (newUsername) => {
+    setUsername(newUsername)
+  }
 
   return (
     <div className="App">
@@ -24,9 +28,9 @@ const App = ({ context, url }) => {
             {/* <SocketProvider> */}
             <Router>
               <Routes>
-                <Route path="" element={<Home />} />
+                <Route path="" element={<Home callback={defineUsername}/>} />
                 <Route path="/CreateRoom" element={<CreateRoom />} />
-                <Route path="/Canvas" element={<Canvas shapes={shapes} setShapes={setShapes} />} />
+                <Route path="/Canvas" element={<Canvas shapes={shapes} setShapes={setShapes} username={username}/>} />
               </Routes>
             </Router>
             {/* </SocketProvider> */}

@@ -5,6 +5,7 @@ import { RoomContext } from "../roomContext";
 // import { UsersContext } from "../usersContext";
 
 const CreateRoom = () => {
+
   //   let canvasSizeValue = 0;
   const navigate = useNavigate();
   // const socket = useContext(SocketContext);
@@ -29,7 +30,6 @@ const CreateRoom = () => {
   return (
     <div className="CreateRoom">
       <h1>Create Room</h1>
-
       {/* <div id='options'>
             <form>
                 <label for='private-input' id='private-label'>Make Private</label> 
