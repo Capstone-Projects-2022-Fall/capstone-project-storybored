@@ -1,5 +1,4 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
-import { Stage, Layer, Text } from "react-konva";
 import { HexColorPicker } from "react-colorful";
 import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
 import Shape from "../shape/Shape";
@@ -8,7 +7,8 @@ import "./styles.css";
 // import { SocketContext } from "../../socketContext";
 import { UsersContext } from "../../usersContext";
 import io from 'socket.io-client'
-import {NotificationContainer, NotificationManager} from 'react-notifications';
+import { Stage, Layer } from "react-konva";
+import { NotificationContainer, NotificationManager } from 'react-notifications';
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -35,15 +35,22 @@ const Canvas = ({ shapes, setShapes, username }) => {
   // const location = useLocation();
 
   const nickname = username;
-  const test = useEffect(() => {socket.emit("join", { nickname, room }, (error) => {
-    if (error) {
-      console.log(error);
+  useEffect(() => {
+    socket.emit("join", { nickname, room }, (error) => {
+      if (error) {
+        console.log(error);
+        return;
+      } else {
+        console.log("joined server");
+      }
       return;
-    } else {
-      console.log("joined server");
-    }
-    return;
-  })}, []);
+    })
+  }, []);
+
+  function playerHandler(users) {
+    setPlayers(users);
+  }
+
 
   useEffect(() => {
     socket.on("users", (users) => {
@@ -205,7 +212,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
   ];
 
   const UserDropdown = () => {
-    if(showUsers)
+    if (showUsers)
       return players.map(p => <p>{p.nickname}</p>)
   }
 
