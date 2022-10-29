@@ -12,7 +12,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 auto;
+  margin: 0.5em auto;
   flex-direction: column;
 }
 
@@ -63,6 +63,23 @@
   border: solid black 1px;
   width: 120px;
   max-width:120px;
+  min-width:120px;
   margin: 0.5em;
-  margin-top: 0;
+}
+
+.Container .usersDropdown {
+  min-width: 100px;
+}
+
+.Container .userList {
+  display: flex;
+  align-items: center;
+  flex-flow: column;
+  margin: 0.5em;
+  border: solid black 1px;
+  padding: 0.25em;
+}
+
+.Container .userList p{
+  margin: 0;
 }

@@ -13,7 +13,7 @@ import {NotificationContainer, NotificationManager} from 'react-notifications';
 const width = window.innerWidth;
 const height = window.innerHeight;
 const ENDPOINT = "139.144.172.98:7007"
-// const ENDPOINT = "http://localhost:7007";
+//const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 const date = new Date();
 const room = 4;
@@ -29,6 +29,8 @@ const Canvas = ({ shapes, setShapes, username }) => {
   const isDrawing = useRef(false);
   // const socket = useContext(SocketContext);
   const { setUsers } = useContext(UsersContext);
+  const [players, setPlayers] = useState([]);
+  const [showUsers, setShowUsers] = useState(false);
   var lastShape;
   // const location = useLocation();
 
@@ -45,6 +47,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
 
   useEffect(() => {
     socket.on("users", (users) => {
+      setPlayers(users);
       console.log(users);
     });
     socket.on("message", (msg) => {
@@ -201,8 +204,17 @@ const Canvas = ({ shapes, setShapes, username }) => {
     { func: toggleColorSelectors, icon: <GiLargePaintBrush /> },
   ];
 
+  const UserDropdown = () => {
+    if(showUsers)
+      return players.map(p => <p>{p.nickname}</p>)
+  }
+
   return (
     <div className="Container">
+      <div className="userList">
+        <h3 onClick={() => setShowUsers((prevState) => !prevState)}>Users [v]</h3>
+        <UserDropdown />
+      </div>
       <Toolbar items={toolbar_params} />
 
       {showColorSelectors && (
