@@ -211,7 +211,25 @@ const Canvas = ({ shapes, setShapes, username }) => {
   function undo(){
     var toBeUndone = undoStack.pop();
     toBeUndone = shapes.indexOf(toBeUndone);
-    shapes.splice(toBeUndone, 1);
+    if (shapes[toBeUndone].type == "rectangle")
+    (
+      {
+        width: 0,
+        height: 0,
+      }
+    )
+    if (shapes[toBeUndone].type == "circle")
+    (
+      {
+        radius: 0,
+      }
+    )
+    if (shapes[toBeUndone].type == "line")
+    (
+      {
+        points: [0, 0],
+      }
+    )
     setShapes([...shapes]);
     return;
   }
