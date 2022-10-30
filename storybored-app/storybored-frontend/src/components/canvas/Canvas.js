@@ -1,11 +1,11 @@
-import React, { useState, useRef, useContext, useEffect } from "react";
+import React, { useState, useRef,  useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
 import "./styles.css";
 // import { SocketContext } from "../../socketContext";
-import { UsersContext } from "../../usersContext";
+// import { UsersContext } from "../../usersContext";
 import io from 'socket.io-client'
 import { Stage, Layer } from "react-konva";
 import { NotificationContainer, NotificationManager } from 'react-notifications';
@@ -15,7 +15,7 @@ const height = window.innerHeight;
 const ENDPOINT = "139.144.172.98:7007"
 //const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
-const date = new Date();
+
 const room = 4;
 
 
@@ -28,7 +28,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
   const [showColorSelectors, setShowColorSelectors] = useState(false);
   const isDrawing = useRef(false);
   // const socket = useContext(SocketContext);
-  const { setUsers } = useContext(UsersContext);
+//   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
   var lastShape;
@@ -54,7 +54,8 @@ const Canvas = ({ shapes, setShapes, username }) => {
     });
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
-      // console.log(show);
+      console.log(show);
+	  if(show.id === null){return;}
       let index = shapes.findLastIndex((element) => element.id === show.id);
       console.log(index);
       if (index < 0) {
@@ -78,6 +79,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
   }, [socket, shapes, setShapes]);
 
   const handleMouseDown = (e) => {
+	// setTempId((tempId) => generateId());
     isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
 	try{
@@ -143,37 +145,28 @@ const Canvas = ({ shapes, setShapes, username }) => {
     if (!isDrawing.current || tool === "eraser") {
       return;
     }
+	//get pointer position
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
 
+	//get shape and modify properties of shape based on mousedrag
     let index = shapes.findIndex((element) => element.id === tempId);
-    // let index = shapes.findLastIndex((element) => element.user === "test");
-	let tempShape;
+	console.log(shapes);
+	let tempShape = shapes[index];
     if (tool === "pen") {
-	tempShape = shapes[index];
       tempShape.points = tempShape.points.concat([pos.x, pos.y]);
-      tempShape.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
-      shapes[index] = tempShape;
     }
     if (tool === "rectangle") {
-	  tempShape = shapes[index];
       tempShape.width = pos.x - tempShape.x;
       tempShape.height = pos.y - tempShape.y;
-      shapes[index] = tempShape;
     }
     if (tool === "circle") {
-      let tempCircle = shapes[index];
-      let x = pos.x - tempCircle.x;
-      let y = pos.y - tempCircle.y;
+      let x = pos.x - tempShape.x;
+      let y = pos.y - tempShape.y;
       let rad = Math.sqrt(x * x + y * y);
-      tempCircle.radius = rad;
-      shapes[index] = tempCircle;
+      tempShape.radius = rad;
     }
-    // console.log(shapes[index]);
-    // console.log(shapes);
-    // setShapes([...shapes]);
-    // console.log(JSON.stringify(shapes.concat()));
-    socket.emit("sendData", JSON.stringify(shapes[index]));
+    socket.emit("sendData", JSON.stringify(tempShape));
 }catch(TypeError){
 		console.log("oops! your tool broke!");
 		return;
@@ -181,14 +174,9 @@ const Canvas = ({ shapes, setShapes, username }) => {
   };
 
   const handleMouseUp = () => {
-    let index = shapes.findLastIndex((element) => element.user === "test");
-    // if (tool === "select") {
-    //   return;
-    // }
     lastShape = null;
     setTempId((tempId) => generateId());
     isDrawing.current = false;
-    // socket.emit("sendData", JSON.stringify(shapes[index]));
   };
 
   function generateId() {
@@ -196,10 +184,6 @@ const Canvas = ({ shapes, setShapes, username }) => {
     let t = d.getTime().toString();
     return t;
   }
-
-  // const handleMouseOver = (e) => {
-  //   console.log(e.target.toString());
-  // };
 
   const setPen = () => setTool("pen");
   const setRect = () => setTool("rectangle");
