@@ -318,7 +318,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
             </div>
           </div>
         </section>
-        <button onclick={undo}>Undo</button>
+        <button onClick={undo}>Undo</button>
       </div>
 
       <div className="NotificationContainer">
