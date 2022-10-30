@@ -209,9 +209,8 @@ const Canvas = ({ shapes, setShapes, username }) => {
   }
 
   function undo(){
-    var toBeUndone = undoStack.pop();
-    toBeUndone = shapes.indexOf(toBeUndone);
-    if (shapes[toBeUndone].type === "rectangle")
+    var toBeUndone = shapes.findIndex((element) => element.id === (undoStack.pop()).id);
+    if ((shapes[toBeUndone]).type === "rectangle")
     {
       shapes[toBeUndone] = {
         type: "rectangle",
@@ -228,7 +227,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
         user: "test",
       };
     }
-    if (shapes[toBeUndone].type === "circle")
+    if ((shapes[toBeUndone]).type === "circle")
     {
       shapes[toBeUndone] = {
         type: "circle",
@@ -244,7 +243,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
         user: "test",
       }
     }
-    if (shapes[toBeUndone].type === "line")
+    if ((shapes[toBeUndone]).type === "line")
     {
       shapes[toBeUndone] = {
         type: "line",
