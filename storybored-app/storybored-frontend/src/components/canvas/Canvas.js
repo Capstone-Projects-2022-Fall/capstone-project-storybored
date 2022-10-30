@@ -211,23 +211,51 @@ const Canvas = ({ shapes, setShapes, username }) => {
   function undo(){
     var toBeUndone = undoStack.pop();
     toBeUndone = shapes.indexOf(toBeUndone);
-    if (shapes[toBeUndone].type === rectangle)
+    if (shapes[toBeUndone].type === "rectangle")
     {
       shapes[toBeUndone] = {
+        type: "rectangle",
+        id: shapes[toBeUndone].id,
+        x: shapes[toBeUndone].x,
+        y: shapes[toBeUndone].y,
+        fill: fillColor,
+        stroke: strokeColor,
+        strokeWidth: strokeWidth,
         width: 0,
         height: 0,
+        draggable: false,
+        listening: false,
+        user: "test",
       };
     }
     if (shapes[toBeUndone].type === "circle")
     {
       shapes[toBeUndone] = {
+        type: "circle",
+        id: shapes[toBeUndone].id,
+        x: shapes[toBeUndone].x,
+        y: shapes[toBeUndone].y,
+        fill: fillColor,
+        stroke: strokeColor,
+        strokeWidth: strokeWidth,
         radius: 0,
+        draggable: false,
+        listening: false,
+        user: "test",
       }
     }
     if (shapes[toBeUndone].type === "line")
     {
       shapes[toBeUndone] = {
+        type: "line",
+        id: shapes[toBeUndone].id,
         points: [0, 0],
+        stroke: strokeColor,
+        strokeWidth: strokeWidth,
+        tension: 0.5,
+        lineCap: "round",
+        draggable: false,
+        user: "test",
       }
     }
     console.log("UNDO WAS PRESSED");
