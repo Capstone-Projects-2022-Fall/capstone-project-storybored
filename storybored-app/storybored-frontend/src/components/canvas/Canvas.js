@@ -47,11 +47,6 @@ const Canvas = ({ shapes, setShapes, username }) => {
     })
   }, []);
 
-  function playerHandler(users) {
-    setPlayers(users);
-  }
-
-
   useEffect(() => {
     socket.on("users", (users) => {
       setPlayers(users);
@@ -85,6 +80,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
   const handleMouseDown = (e) => {
     isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
+	try{
     //put this in a map or something so we can actually maintain this
     if (tool === "pen") {
       lastShape = {
@@ -133,11 +129,16 @@ const Canvas = ({ shapes, setShapes, username }) => {
     if (tool === "eraser") {
       return;
     }
-    setShapes(shapes.concat(lastShape));
+    // setShapes(shapes.concat(lastShape));
     socket.emit("sendData", JSON.stringify(lastShape));
+} catch(TypeError){
+	console.log("oops! your tool broke!");
+	return;
+}
   };
 
   const handleMouseMove = (e) => {
+	try{
     // no drawing - skipping
     if (!isDrawing.current || tool === "eraser") {
       return;
@@ -145,20 +146,20 @@ const Canvas = ({ shapes, setShapes, username }) => {
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
 
-    // let index = shapes.findIndex((element) => element.id === tempId);
-    let index = shapes.findLastIndex((element) => element.user === "test");
-
+    let index = shapes.findIndex((element) => element.id === tempId);
+    // let index = shapes.findLastIndex((element) => element.user === "test");
+	let tempShape;
     if (tool === "pen") {
-      let tempLine = shapes[index];
-      tempLine.points = tempLine.points.concat([pos.x, pos.y]);
-      tempLine.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
-      shapes[index] = tempLine;
+	tempShape = shapes[index];
+      tempShape.points = tempShape.points.concat([pos.x, pos.y]);
+      tempShape.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
+      shapes[index] = tempShape;
     }
     if (tool === "rectangle") {
-      let tempRect = shapes[index];
-      tempRect.width = pos.x - tempRect.x;
-      tempRect.height = pos.y - tempRect.y;
-      shapes[index] = tempRect;
+	  tempShape = shapes[index];
+      tempShape.width = pos.x - tempShape.x;
+      tempShape.height = pos.y - tempShape.y;
+      shapes[index] = tempShape;
     }
     if (tool === "circle") {
       let tempCircle = shapes[index];
@@ -170,9 +171,13 @@ const Canvas = ({ shapes, setShapes, username }) => {
     }
     // console.log(shapes[index]);
     // console.log(shapes);
-    setShapes([...shapes]);
+    // setShapes([...shapes]);
     // console.log(JSON.stringify(shapes.concat()));
     socket.emit("sendData", JSON.stringify(shapes[index]));
+}catch(TypeError){
+		console.log("oops! your tool broke!");
+		return;
+	}
   };
 
   const handleMouseUp = () => {
@@ -183,7 +188,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
     lastShape = null;
     setTempId((tempId) => generateId());
     isDrawing.current = false;
-    socket.emit("sendData", JSON.stringify(shapes[index]));
+    // socket.emit("sendData", JSON.stringify(shapes[index]));
   };
 
   function generateId() {
