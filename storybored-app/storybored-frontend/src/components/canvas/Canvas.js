@@ -32,7 +32,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
   const undoStack = [];
-  const redoStack = [];
+  //const redoStack = [];
   var lastShape;
   // const location = useLocation();
 
