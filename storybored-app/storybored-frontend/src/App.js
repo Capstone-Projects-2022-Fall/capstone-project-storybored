@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Canvas from "./components/canvas/Canvas";
 import Home from "./components/Home.js";
 import CreateRoom from "./components/CreateRoom";
-import { SocketProvider } from "./socketContext";
+// import { SocketProvider } from "./socketContext";
 import { RoomProvider } from "./roomContext";
 import { UsersProvider } from "./usersContext";
 
