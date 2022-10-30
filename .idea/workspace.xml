@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< Updated upstream
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="359ee5cf-46f1-4797-9ac2-e8917a81d673" name="Changes" comment="" />
+=======
+  <component name="ChangeListManager">
+    <list default="true" id="f6265303-aeb3-46da-b9e2-7c3ee41573f2" name="Changes" comment="" />
+>>>>>>> Stashed changes
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,10 +18,14 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+<<<<<<< Updated upstream
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2GQCJS8k8tFwV1IpUXgPD0VZhUU" />
+=======
+  <component name="ProjectId" id="2Gs9SrQ71mLStag4bnu9KE2sNWe" />
+>>>>>>> Stashed changes
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -31,11 +40,19 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
+<<<<<<< Updated upstream
       <changelist id="359ee5cf-46f1-4797-9ac2-e8917a81d673" name="Changes" comment="" />
       <created>1666311349360</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1666311349360</updated>
+=======
+      <changelist id="f6265303-aeb3-46da-b9e2-7c3ee41573f2" name="Changes" comment="" />
+      <created>1667166428196</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1667166428196</updated>
+>>>>>>> Stashed changes
     </task>
     <servers />
   </component>
