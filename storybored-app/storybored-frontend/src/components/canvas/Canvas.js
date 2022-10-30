@@ -211,7 +211,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
   function undo(){
     var toBeUndone = undoStack.pop();
     toBeUndone = shapes.indexOf(toBeUndone);
-    if (shapes[toBeUndone].type === "rectangle")
+    if (shapes[toBeUndone].type === rectangle)
     {
       shapes[toBeUndone] = {
         width: 0,
@@ -230,6 +230,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
         points: [0, 0],
       }
     }
+    console.log("UNDO WAS PRESSED");
     setShapes([...shapes]);
     return;
   }
