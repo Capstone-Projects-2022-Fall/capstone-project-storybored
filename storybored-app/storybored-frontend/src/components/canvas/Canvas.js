@@ -262,6 +262,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
     var toBeUndone = undoStack.pop();
     redoStack.push(toBeUndone);
     toBeUndone.remove();
+    setShapes(shapes);
     return;
   }
 
