@@ -1,7 +1,7 @@
-import React, { useContext } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 // import { SocketContext } from "../socketContext";
-import { RoomContext } from "../roomContext";
+// import { RoomContext } from "../roomContext";
 // import { UsersContext } from "../usersContext";
 
 const CreateRoom = () => {
@@ -10,7 +10,7 @@ const CreateRoom = () => {
   const navigate = useNavigate();
   // const socket = useContext(SocketContext);
   //   const { setUsers } = useContext(UsersContext);
-  const { room } = useContext(RoomContext);
+//   const { room } = useContext(RoomContext);
 
   const navToCanvas = () => {
     // let date = new Date();
