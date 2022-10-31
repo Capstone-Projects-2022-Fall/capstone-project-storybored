@@ -21,8 +21,8 @@ const room = 4;
 
 const Canvas = ({ shapes, setShapes, username }) => {
   const [tool, setTool] = useState("pen");
-  const [strokeColor, setStrokeColor] = useState("#abcdef");
-  const [fillColor, setFillColor] = useState("#fedcba");
+  const [strokeColor, setStrokeColor] = useState("#000"); //black
+  const [fillColor, setFillColor] = useState("#fff"); //white
   const [tempId, setTempId] = useState((tempId) => (tempId = generateId()));
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [showColorSelectors, setShowColorSelectors] = useState(false);
@@ -31,7 +31,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
 //   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
-  var lastShape;
+  let lastShape;
   // const location = useLocation();
 
   const nickname = username;
