@@ -209,7 +209,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
   }
 
   function undo(){
-    var toBeUndone = shapes.findIndex((element) => element.id === (undoStack.pop()).id);
+    /*var toBeUndone = shapes.findIndex((element) => element.id === (undoStack.pop()).id);
     if ((shapes[toBeUndone]).type === "rectangle")
     {
       shapes[toBeUndone] = {
@@ -258,7 +258,10 @@ const Canvas = ({ shapes, setShapes, username }) => {
       }
     }
     console.log("UNDO WAS PRESSED");
-    setShapes([...shapes]);
+    setShapes([...shapes]);*/
+    var toBeUndone = undoStack.pop();
+    redoStack.push(toBeUndone);
+    toBeUndone.remove();
     return;
   }
 
