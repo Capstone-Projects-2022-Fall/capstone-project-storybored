@@ -3,6 +3,7 @@ import { HexColorPicker } from "react-colorful";
 import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
+import FrameView from "../FrameView";
 import "./styles.css";
 // import { SocketContext } from "../../socketContext";
 // import { UsersContext } from "../../usersContext";
@@ -54,15 +55,15 @@ const Canvas = ({ shapes, setShapes, username }) => {
     });
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
-      console.log(show);
+      //console.log(show);
 	  if(show.id === null){return;}
       let index = shapes.findLastIndex((element) => element.id === show.id);
-      console.log(index);
+      //console.log(index);
       if (index < 0) {
-        console.log("here");
+        //console.log("here");
         setShapes(shapes.concat(show));
       } else {
-        console.log("there");
+        //console.log("there");
         shapes[index] = show;
         setShapes([...shapes])
       }
@@ -151,7 +152,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
 
 	//get shape and modify properties of shape based on mousedrag
     let index = shapes.findIndex((element) => element.id === tempId);
-	console.log(shapes);
+	//console.log(shapes);
 	let tempShape = shapes[index];
     if (tool === "pen") {
       tempShape.points = tempShape.points.concat([pos.x, pos.y]);
@@ -229,7 +230,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
       <div className="Canvas-Container">
         <Stage
           className="Canvas"
-          width={width - 120}
+          width={width - 360}
           height={height - 120}
           onMouseDown={handleMouseDown}
           onMousemove={handleMouseMove}
@@ -262,8 +263,14 @@ const Canvas = ({ shapes, setShapes, username }) => {
         </section>
       </div>
 
-      <div className="NotificationContainer">
-        <NotificationContainer />
+      <div className='RightContainer' style={{height: height-120}}>
+        <div className="NotificationContainer">
+          <NotificationContainer />
+        </div>
+
+        <>
+            <FrameView numFrames={2} />
+        </>
       </div>
     </div>
   );
