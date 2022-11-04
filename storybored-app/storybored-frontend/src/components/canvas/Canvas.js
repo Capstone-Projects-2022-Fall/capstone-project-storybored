@@ -31,8 +31,6 @@ const Canvas = ({ shapes, setShapes, username }) => {
 //   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
-  const undoStack = [];
-  const redoStack = [];
   var lastShape;
   // const location = useLocation();
 
@@ -133,7 +131,6 @@ const Canvas = ({ shapes, setShapes, username }) => {
     if (tool === "eraser") {
       return;
     }
-    undoStack.push(lastShape);
     // setShapes(shapes.concat(lastShape));
     socket.emit("sendData", JSON.stringify(lastShape));
 } catch(TypeError){
@@ -210,7 +207,6 @@ const Canvas = ({ shapes, setShapes, username }) => {
 
   function undo(){
     var toBeUndone = shapes.length - 1;
-    redoStack.push(toBeUndone);
     shapes.splice(toBeUndone, 1);
     setShapes([...shapes]);
   }
