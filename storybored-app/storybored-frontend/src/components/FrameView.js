@@ -1,6 +1,6 @@
 import React from 'react'
 
-const FrameView = ( {numFrames} ) => {
+const FrameView = ( {numFrames, frame, width, height} ) => {
 
     let items = new Array(numFrames).fill(0)
     let item_size;
@@ -11,8 +11,10 @@ const FrameView = ( {numFrames} ) => {
     let j = 0;
 
     return (
-    <div className="FrameViewContainer">
-        {items.map(i => <div key={j++} className="FrameViewItem" style={{width: '100%', height: item_size}} />)}
+    <div className="FrameViewContainer" style={{width: (width-360) / 5}}>
+        {items.map(i => <div key={j++} className="FrameViewItem" style={{width: '100%', height: item_size}}> 
+                            <img className='FrameViewImage' src={frame}/>
+                        </div>)}
     </div>
     )
 }

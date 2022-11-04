@@ -32,7 +32,10 @@ const Canvas = ({ shapes, setShapes, username }) => {
 //   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
+  const [uri, setUri] = useState('')
+  const [updateUri, setUpdateUri] = useState(true)
   let lastShape;
+  const stageRef = React.useRef(null);
   // const location = useLocation();
 
   const nickname = username;
@@ -68,9 +71,11 @@ const Canvas = ({ shapes, setShapes, username }) => {
         setShapes([...shapes])
       }
     });
+
+
     socket.on("notification", (notif) => {
       console.log(notif.description);
-      NotificationManager.info(notif.description, '', 10000)
+      NotificationManager.info(notif.description, '', 6000)
     });
     return () => {
       socket.off("notification");
@@ -78,6 +83,20 @@ const Canvas = ({ shapes, setShapes, username }) => {
       socket.off("users");
     }
   }, [socket, shapes, setShapes]);
+
+  //Updating FrameView
+  //setTimeout ensures FrameViewImage's are only updated once every 3 seconds, for performance reasons
+  useEffect(() => {
+    if(updateUri){
+      setUpdateUri(false);
+      setUri(stageRef.current.toDataURL());
+      setTimeout(() => {
+        setUpdateUri(true)
+      }, 3000)
+      //console.log("URI: " + uri);}
+    }
+
+  });
 
   const handleMouseDown = (e) => {
 	// setTempId((tempId) => generateId());
@@ -205,9 +224,10 @@ const Canvas = ({ shapes, setShapes, username }) => {
     if (showUsers)
       return players.map(p => <p>{p.nickname}</p>)
   }
+  
 
   return (
-    <div className="Container">
+    <div className="Container" style={{maxWidth:width}}>
       <div className="userList">
         <h3 onClick={() => setShowUsers((prevState) => !prevState)}>Users [v]</h3>
         <UserDropdown />
@@ -230,11 +250,12 @@ const Canvas = ({ shapes, setShapes, username }) => {
       <div className="Canvas-Container">
         <Stage
           className="Canvas"
-          width={width - 360}
+          width={width - 560}
           height={height - 120}
           onMouseDown={handleMouseDown}
           onMousemove={handleMouseMove}
           onMouseup={handleMouseUp}
+          ref={stageRef}
         >
           <Layer>
             {shapes.map((shape, i) => (
@@ -269,7 +290,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
         </div>
 
         <>
-            <FrameView numFrames={2} />
+            <FrameView numFrames={3} frame={uri} width={width} height={height}/>
         </>
       </div>
     </div>
