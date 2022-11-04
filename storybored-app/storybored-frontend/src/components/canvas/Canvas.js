@@ -209,60 +209,13 @@ const Canvas = ({ shapes, setShapes, username }) => {
   }
 
   function undo(){
-    /*var toBeUndone = shapes.findIndex((element) => element.id === (undoStack.pop()).id);
-    if ((shapes[toBeUndone]).type === "rectangle")
-    {
-      shapes[toBeUndone] = {
-        type: "rectangle",
-        id: shapes[toBeUndone].id,
-        x: shapes[toBeUndone].x,
-        y: shapes[toBeUndone].y,
-        fill: fillColor,
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
-        width: 0,
-        height: 0,
-        draggable: false,
-        listening: false,
-        user: "test",
-      };
-    }
-    if ((shapes[toBeUndone]).type === "circle")
-    {
-      shapes[toBeUndone] = {
-        type: "circle",
-        id: shapes[toBeUndone].id,
-        x: shapes[toBeUndone].x,
-        y: shapes[toBeUndone].y,
-        fill: fillColor,
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
-        radius: 0,
-        draggable: false,
-        listening: false,
-        user: "test",
-      }
-    }
-    if ((shapes[toBeUndone]).type === "line")
-    {
-      shapes[toBeUndone] = {
-        type: "line",
-        id: shapes[toBeUndone].id,
-        points: [0, 0],
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
-        tension: 0.5,
-        lineCap: "round",
-        draggable: false,
-        user: "test",
-      }
-    }
-    console.log("UNDO WAS PRESSED");
-    setShapes([...shapes]);*/
-    var toBeUndone = undoStack.pop();
+    var toBeUndone = (undoStack.pop())
     redoStack.push(toBeUndone);
-    toBeUndone.remove();
-    setShapes(shapes);
+    var toBeUndoneIndex = shapes.findIndex((element) => element.id === toBeUndone.id);
+    if (toBeUndoneIndex > -1){
+     shapes.splice(toBeUndoneIndex, 1);
+    }
+    setShapes([...shapes]);
     return;
   }
 
