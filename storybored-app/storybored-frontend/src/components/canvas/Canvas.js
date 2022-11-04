@@ -31,6 +31,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
 //   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
+  var redoStack = [];
   var lastShape;
   // const location = useLocation();
 
@@ -207,8 +208,16 @@ const Canvas = ({ shapes, setShapes, username }) => {
 
   function undo(){
     var toBeUndone = shapes.length - 1;
-    shapes.splice(toBeUndone, 1);
+    redoStack.push(shapes.splice(toBeUndone, 1));
     setShapes([...shapes]);
+    return;
+  }
+
+  function redo(){
+    /*var toBeRedone = redoStack.pop();
+    shapes.splice(shapes.length - 1, 0, toBeRedone);
+    setShapes([...shapes]);*/
+    return;
   }
 
   return (
@@ -267,6 +276,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
           </div>
         </section>
         <button onClick={undo}>Undo</button>
+        <button onClick={redo}>Redo</button>
       </div>
 
       <div className="NotificationContainer">
