@@ -209,14 +209,10 @@ const Canvas = ({ shapes, setShapes, username }) => {
   }
 
   function undo(){
-    var toBeUndone = (undoStack.pop())
+    var toBeUndone = shapes.length - 1;
     redoStack.push(toBeUndone);
-    var toBeUndoneIndex = shapes.findIndex((element) => element.id === toBeUndone.id);
-    if (toBeUndoneIndex > -1){
-     shapes.splice(toBeUndoneIndex, 1);
-    }
+    shapes.splice(toBeUndone, 1);
     setShapes([...shapes]);
-    return;
   }
 
   return (
