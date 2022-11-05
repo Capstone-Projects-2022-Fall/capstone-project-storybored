@@ -5,9 +5,11 @@ var jwt = require("jsonwebtoken");
 var uuid = require("uuid");
 var dotenv = require("dotenv").config();
 var cors = require("cors");
+const { map } = require("bluebird");
 //
 
 const PORT = 7007;
+const shape_map = new Map();
 
 
 /**
@@ -55,6 +57,13 @@ const removeUser = (id) => {
   }
 };
 
+async function updateClient(socketId, socket){
+	for( let shape of shape_map.keys()){
+		let response = JSON.stringify(shape);
+		io.to(socketId).emit("message", { user: response.user, text: response });
+	}
+}
+
 
 //creating event handlers for socket message received events
 io.on("connection", (socket) => {
@@ -66,22 +75,29 @@ io.on("connection", (socket) => {
     console.log(`${user.nickname} joined`);
     socket.broadcast.emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
     io.emit("users", getUsers());
+	updateClient(socket.id, socket);
     callback();
   });
 
   socket.on("sendData", (data) => {
     const user = getUser(socket.id);
+	let shape = JSON.parse(data);
+	shape_map.set(shape.id, shape);
+	let response = JSON.stringify(shape_map.get(shape.id));
     if (!user) return;
-    io.emit("message", { user: user.nickname, text: data });
+    io.emit("message", { user: user.nickname, text: response });
   });
 
   socket.on("disconnect", () => {
     const user = removeUser(socket.id);
     if (user) {
-      console.log("user disconnected from server");
+      console.log(`${user.nickname} left the server`);
       io.emit("notification", { title: "Someone left", description: `${user.nickname} left` });
       io.emit("users", getUsers());
     }
+	if(connected_clients.length == 0){
+		shape_map.clear();
+	}
   });
 });
 

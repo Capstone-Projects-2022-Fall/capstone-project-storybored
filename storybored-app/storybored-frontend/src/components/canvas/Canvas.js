@@ -12,8 +12,8 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 
 const width = window.innerWidth;
 const height = window.innerHeight;
-const ENDPOINT = "139.144.172.98:7007"
-//const ENDPOINT = "http://localhost:7007";
+// const ENDPOINT = "139.144.172.98:7007"
+const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
 const room = 4;
