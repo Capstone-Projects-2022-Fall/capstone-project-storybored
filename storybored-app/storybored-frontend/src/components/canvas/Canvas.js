@@ -32,10 +32,15 @@ const Canvas = ({ shapes, setShapes, username }) => {
 //   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
+<<<<<<< HEAD
   const [uri, setUri] = useState('')
   const [updateUri, setUpdateUri] = useState(true)
   let lastShape;
   const stageRef = React.useRef(null);
+=======
+  var redoStack = [];
+  var lastShape;
+>>>>>>> 7356c1cb4f8fef0d8f6f3d93c7bb133a1b59f27a
   // const location = useLocation();
 
   const nickname = username;
@@ -226,6 +231,20 @@ const Canvas = ({ shapes, setShapes, username }) => {
   }
   
 
+  function undo(){
+    var toBeUndone = shapes.length - 1;
+    redoStack.push(shapes.splice(toBeUndone, 1));
+    setShapes([...shapes]);
+    return;
+  }
+
+  function redo(){
+    /*var toBeRedone = redoStack.pop();
+    shapes.splice(shapes.length - 1, 0, toBeRedone);
+    setShapes([...shapes]);*/
+    return;
+  }
+
   return (
     <div className="Container" style={{maxWidth:width}}>
       <div className="userList">
@@ -282,6 +301,8 @@ const Canvas = ({ shapes, setShapes, username }) => {
             </div>
           </div>
         </section>
+        <button onClick={undo}>Undo</button>
+        <button onClick={redo}>Redo</button>
       </div>
 
       <div className='RightContainer' style={{height: height-120}}>
