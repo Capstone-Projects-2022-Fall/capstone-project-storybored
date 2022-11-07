@@ -104,6 +104,7 @@
 
 .Container .userList p{
   margin: 0;
+  cursor: default;
 }
 
 .RightContainer {
@@ -123,6 +124,8 @@
 }
 
 .FrameViewImage {
+  min-width: 100px;
+  min-height: 100px;
   max-width: 100%;
   max-height: 100%;
 }
