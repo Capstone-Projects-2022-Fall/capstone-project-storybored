@@ -32,15 +32,13 @@ const Canvas = ({ shapes, setShapes, username }) => {
 //   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
-<<<<<<< HEAD
+
   const [uri, setUri] = useState('')
   const [updateUri, setUpdateUri] = useState(true)
   let lastShape;
   const stageRef = React.useRef(null);
-=======
+
   var redoStack = [];
-  var lastShape;
->>>>>>> 7356c1cb4f8fef0d8f6f3d93c7bb133a1b59f27a
   // const location = useLocation();
 
   const nickname = username;
