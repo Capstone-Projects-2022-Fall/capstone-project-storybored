@@ -1,11 +1,12 @@
-import React, { useState, useRef, useContext, useEffect } from "react";
+import React, { useState, useRef,  useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
+import FrameView from "../FrameView";
 import "./styles.css";
 // import { SocketContext } from "../../socketContext";
-import { UsersContext } from "../../usersContext";
+// import { UsersContext } from "../../usersContext";
 import io from 'socket.io-client'
 import { Stage, Layer } from "react-konva";
 import { NotificationContainer, NotificationManager } from 'react-notifications';
@@ -15,23 +16,29 @@ const height = window.innerHeight;
 const ENDPOINT = "139.144.172.98:7007"
 //const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
-const date = new Date();
+
 const room = 4;
 
 
 const Canvas = ({ shapes, setShapes, username }) => {
   const [tool, setTool] = useState("pen");
-  const [strokeColor, setStrokeColor] = useState("#abcdef");
-  const [fillColor, setFillColor] = useState("#fedcba");
+  const [strokeColor, setStrokeColor] = useState("#000"); //black
+  const [fillColor, setFillColor] = useState("#fff"); //white
   const [tempId, setTempId] = useState((tempId) => (tempId = generateId()));
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [showColorSelectors, setShowColorSelectors] = useState(false);
   const isDrawing = useRef(false);
   // const socket = useContext(SocketContext);
-  const { setUsers } = useContext(UsersContext);
+//   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
-  var lastShape;
+
+  const [uri, setUri] = useState('')
+  const [updateUri, setUpdateUri] = useState(true)
+  let lastShape;
+  const stageRef = React.useRef(null);
+
+  var redoStack = [];
   // const location = useLocation();
 
   const nickname = username;
@@ -47,11 +54,6 @@ const Canvas = ({ shapes, setShapes, username }) => {
     })
   }, []);
 
-  function playerHandler(users) {
-    setPlayers(users);
-  }
-
-
   useEffect(() => {
     socket.on("users", (users) => {
       setPlayers(users);
@@ -59,21 +61,24 @@ const Canvas = ({ shapes, setShapes, username }) => {
     });
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
-      // console.log(show);
+      //console.log(show);
+	  if(show.id === null){return;}
       let index = shapes.findLastIndex((element) => element.id === show.id);
-      console.log(index);
+      //console.log(index);
       if (index < 0) {
-        console.log("here");
+        //console.log("here");
         setShapes(shapes.concat(show));
       } else {
-        console.log("there");
+        //console.log("there");
         shapes[index] = show;
         setShapes([...shapes])
       }
     });
+
+
     socket.on("notification", (notif) => {
       console.log(notif.description);
-      NotificationManager.info(notif.description, '', 10000)
+      NotificationManager.info(notif.description, '', 6000)
     });
     return () => {
       socket.off("notification");
@@ -82,9 +87,25 @@ const Canvas = ({ shapes, setShapes, username }) => {
     }
   }, [socket, shapes, setShapes]);
 
+  //Updating FrameView
+  //setTimeout ensures FrameViewImage's are only updated once every 3 seconds, for performance reasons
+  useEffect(() => {
+    if(updateUri){
+      setUpdateUri(false);
+      setUri(stageRef.current.toDataURL());
+      setTimeout(() => {
+        setUpdateUri(true)
+      }, 3000)
+      //console.log("URI: " + uri);}
+    }
+
+  });
+
   const handleMouseDown = (e) => {
+	// setTempId((tempId) => generateId());
     isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
+	try{
     //put this in a map or something so we can actually maintain this
     if (tool === "pen") {
       lastShape = {
@@ -133,57 +154,52 @@ const Canvas = ({ shapes, setShapes, username }) => {
     if (tool === "eraser") {
       return;
     }
-    setShapes(shapes.concat(lastShape));
+    // setShapes(shapes.concat(lastShape));
     socket.emit("sendData", JSON.stringify(lastShape));
+} catch(TypeError){
+	console.log("oops! your tool broke!");
+	return;
+}
   };
 
   const handleMouseMove = (e) => {
+	try{
     // no drawing - skipping
     if (!isDrawing.current || tool === "eraser") {
       return;
     }
+	//get pointer position
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
 
-    // let index = shapes.findIndex((element) => element.id === tempId);
-    let index = shapes.findLastIndex((element) => element.user === "test");
-
+	//get shape and modify properties of shape based on mousedrag
+    let index = shapes.findIndex((element) => element.id === tempId);
+	//console.log(shapes);
+	let tempShape = shapes[index];
     if (tool === "pen") {
-      let tempLine = shapes[index];
-      tempLine.points = tempLine.points.concat([pos.x, pos.y]);
-      tempLine.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
-      shapes[index] = tempLine;
+      tempShape.points = tempShape.points.concat([pos.x, pos.y]);
     }
     if (tool === "rectangle") {
-      let tempRect = shapes[index];
-      tempRect.width = pos.x - tempRect.x;
-      tempRect.height = pos.y - tempRect.y;
-      shapes[index] = tempRect;
+      tempShape.width = pos.x - tempShape.x;
+      tempShape.height = pos.y - tempShape.y;
     }
     if (tool === "circle") {
-      let tempCircle = shapes[index];
-      let x = pos.x - tempCircle.x;
-      let y = pos.y - tempCircle.y;
+      let x = pos.x - tempShape.x;
+      let y = pos.y - tempShape.y;
       let rad = Math.sqrt(x * x + y * y);
-      tempCircle.radius = rad;
-      shapes[index] = tempCircle;
+      tempShape.radius = rad;
     }
-    // console.log(shapes[index]);
-    // console.log(shapes);
-    setShapes([...shapes]);
-    // console.log(JSON.stringify(shapes.concat()));
-    socket.emit("sendData", JSON.stringify(shapes[index]));
+    socket.emit("sendData", JSON.stringify(tempShape));
+}catch(TypeError){
+		console.log("oops! your tool broke!");
+		return;
+	}
   };
 
   const handleMouseUp = () => {
-    let index = shapes.findLastIndex((element) => element.user === "test");
-    // if (tool === "select") {
-    //   return;
-    // }
     lastShape = null;
     setTempId((tempId) => generateId());
     isDrawing.current = false;
-    socket.emit("sendData", JSON.stringify(shapes[index]));
   };
 
   function generateId() {
@@ -191,10 +207,6 @@ const Canvas = ({ shapes, setShapes, username }) => {
     let t = d.getTime().toString();
     return t;
   }
-
-  // const handleMouseOver = (e) => {
-  //   console.log(e.target.toString());
-  // };
 
   const setPen = () => setTool("pen");
   const setRect = () => setTool("rectangle");
@@ -215,9 +227,24 @@ const Canvas = ({ shapes, setShapes, username }) => {
     if (showUsers)
       return players.map(p => <p>{p.nickname}</p>)
   }
+  
+
+  function undo(){
+    var toBeUndone = shapes.length - 1;
+    redoStack.push(shapes.splice(toBeUndone, 1));
+    setShapes([...shapes]);
+    return;
+  }
+
+  function redo(){
+    /*var toBeRedone = redoStack.pop();
+    shapes.splice(shapes.length - 1, 0, toBeRedone);
+    setShapes([...shapes]);*/
+    return;
+  }
 
   return (
-    <div className="Container">
+    <div className="Container" style={{maxWidth:width}}>
       <div className="userList">
         <h3 onClick={() => setShowUsers((prevState) => !prevState)}>Users [v]</h3>
         <UserDropdown />
@@ -240,11 +267,12 @@ const Canvas = ({ shapes, setShapes, username }) => {
       <div className="Canvas-Container">
         <Stage
           className="Canvas"
-          width={width - 120}
+          width={width - 560}
           height={height - 120}
           onMouseDown={handleMouseDown}
           onMousemove={handleMouseMove}
           onMouseup={handleMouseUp}
+          ref={stageRef}
         >
           <Layer>
             {shapes.map((shape, i) => (
@@ -271,10 +299,18 @@ const Canvas = ({ shapes, setShapes, username }) => {
             </div>
           </div>
         </section>
+        <button onClick={undo}>Undo</button>
+        <button onClick={redo}>Redo</button>
       </div>
 
-      <div className="NotificationContainer">
-        <NotificationContainer />
+      <div className='RightContainer' style={{height: height-120}}>
+        <div className="NotificationContainer">
+          <NotificationContainer />
+        </div>
+
+        <>
+            <FrameView numFrames={3} frame={uri} width={width} height={height}/>
+        </>
       </div>
     </div>
   );
