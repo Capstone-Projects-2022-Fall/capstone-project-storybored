@@ -11,7 +11,6 @@ const { map } = require("bluebird");
 const PORT = 7007;
 const shape_map = new Map();
 
-
 /**
  * Creates endpoints for HTTP response and requests.
  */
@@ -22,20 +21,20 @@ app.use(cors());
 app.locals.index = 1000000000;
 const connected_clients = []; //const refernce, mutable array
 const server = http.createServer(app);
-const io = require("socket.io")(server,
-  {
-    cors: {
-      origin: "*",
-    }
-  });
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+  },
+});
 
 const addUser = (id, nickname, room) => {
-
   for (c in connected_clients) {
-    if (c.id === id || c.room === room) { return; }
+    if (c.id === id && c.room === room) {
+      return;
+    }
   }
-  if (!nickname) return { error: "Username is required" }
-  if (!room) return { error: "Room is required" }
+  if (!nickname) return { error: "Username is required" };
+  if (!room) return { error: "Room is required" };
   const user = { id, nickname, room };
   connected_clients.push(user);
   return { user };
@@ -57,13 +56,12 @@ const removeUser = (id) => {
   }
 };
 
-async function updateClient(socketId, socket){
-	for( let shape of shape_map.keys()){
-		let response = JSON.stringify(shape);
-		io.to(socketId).emit("message", { user: response.user, text: response });
-	}
-}
-
+// async function updateClient(socketId, socket) {
+//   for (let shape of shape_map.keys()) {
+//     let response = JSON.stringify(shape);
+//     io.to(socketId).emit("message", { user: response.user, text: response });
+//   }
+// }
 
 //creating event handlers for socket message received events
 io.on("connection", (socket) => {
@@ -76,19 +74,26 @@ io.on("connection", (socket) => {
     console.log(`${user.nickname} joined`);
     socket.broadcast.emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
     io.emit("users", getUsers());
-	updateClient(socket.id, socket);
+    // updateClient(socket.id, socket);
     callback();
   });
 
   socket.on("sendData", (data) => {
     const user = getUser(socket.id);
-	let shape = JSON.parse(data);
-	shape_map.set(shape.id, shape);
-	let response = JSON.stringify(shape_map.get(shape.id));
+    let shape = JSON.parse(data);
+    shape_map.set(shape.id, shape);
+    let response = JSON.stringify(shape_map.get(shape.id));
     if (!user) return;
-    io.to(user.room).emit("message", { user: user.nickname, text: data });
+    io.to(user.room).emit("message", { user: user.nickname, text: response });
   });
 
+  socket.on("removeShape", (data) => {
+    console.log(data);
+    console.log(shape_map);
+    const user = getUser(socket.id);
+    shape_map.delete(data);
+    io.to(user.room).emit("deleteshape", data);
+  });
 
   socket.on("disconnect", () => {
     const user = removeUser(socket.id);
@@ -97,9 +102,9 @@ io.on("connection", (socket) => {
       io.emit("notification", { title: "Someone left", description: `${user.nickname} left` });
       io.emit("users", getUsers());
     }
-	if(connected_clients.length == 0){
-		shape_map.clear();
-	}
+    if (connected_clients.length == 0) {
+      shape_map.clear();
+    }
   });
 });
 

@@ -5,12 +5,11 @@ import { useNavigate } from "react-router-dom";
 // import { UsersContext } from "../usersContext";
 
 const CreateRoom = () => {
-
   //   let canvasSizeValue = 0;
   const navigate = useNavigate();
   // const socket = useContext(SocketContext);
   //   const { setUsers } = useContext(UsersContext);
-//   const { room } = useContext(RoomContext);
+  //   const { room } = useContext(RoomContext);
 
   const navToCanvas = () => {
     // let date = new Date();
@@ -29,7 +28,7 @@ const CreateRoom = () => {
 
   return (
     <div className="CreateRoom">
-      <h1>Create Room</h1>
+      <h1>Join Room</h1>
       {/* <div id='options'>
             <form>
                 <label for='private-input' id='private-label'>Make Private</label> 
