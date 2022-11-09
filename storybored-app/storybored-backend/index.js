@@ -32,7 +32,7 @@ const io = require("socket.io")(server,
 const addUser = (id, nickname, room) => {
 
   for (c in connected_clients) {
-    if (c.id === id) { return; }
+    if (c.id === id || c.room === room) { return; }
   }
   if (!nickname) return { error: "Username is required" }
   if (!room) return { error: "Room is required" }
@@ -72,6 +72,7 @@ io.on("connection", (socket) => {
     if (error) {
       return callback(error);
     }
+    socket.join(room);
     console.log(`${user.nickname} joined`);
     socket.broadcast.emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
     io.emit("users", getUsers());
@@ -85,8 +86,9 @@ io.on("connection", (socket) => {
 	shape_map.set(shape.id, shape);
 	let response = JSON.stringify(shape_map.get(shape.id));
     if (!user) return;
-    io.emit("message", { user: user.nickname, text: response });
+    io.to(user.room).emit("message", { user: user.nickname, text: data });
   });
+
 
   socket.on("disconnect", () => {
     const user = removeUser(socket.id);

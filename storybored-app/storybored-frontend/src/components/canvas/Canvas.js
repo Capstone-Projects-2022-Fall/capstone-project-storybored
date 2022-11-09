@@ -3,6 +3,7 @@ import { HexColorPicker } from "react-colorful";
 import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
+import FrameView from "../FrameView";
 import "./styles.css";
 // import { SocketContext } from "../../socketContext";
 // import { UsersContext } from "../../usersContext";
@@ -21,8 +22,8 @@ const room = 4;
 
 const Canvas = ({ shapes, setShapes, username }) => {
   const [tool, setTool] = useState("pen");
-  const [strokeColor, setStrokeColor] = useState("#abcdef");
-  const [fillColor, setFillColor] = useState("#fedcba");
+  const [strokeColor, setStrokeColor] = useState("#000"); //black
+  const [fillColor, setFillColor] = useState("#fff"); //white
   const [tempId, setTempId] = useState((tempId) => (tempId = generateId()));
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [showColorSelectors, setShowColorSelectors] = useState(false);
@@ -31,7 +32,13 @@ const Canvas = ({ shapes, setShapes, username }) => {
 //   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
-  var lastShape;
+
+  const [uri, setUri] = useState('')
+  const [updateUri, setUpdateUri] = useState(true)
+  let lastShape;
+  const stageRef = React.useRef(null);
+
+  var redoStack = [];
   // const location = useLocation();
 
   const nickname = username;
@@ -54,22 +61,24 @@ const Canvas = ({ shapes, setShapes, username }) => {
     });
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
-      console.log(show);
+      //console.log(show);
 	  if(show.id === null){return;}
       let index = shapes.findLastIndex((element) => element.id === show.id);
-      console.log(index);
+      //console.log(index);
       if (index < 0) {
-        console.log("here");
+        //console.log("here");
         setShapes(shapes.concat(show));
       } else {
-        console.log("there");
+        //console.log("there");
         shapes[index] = show;
         setShapes([...shapes])
       }
     });
+
+
     socket.on("notification", (notif) => {
       console.log(notif.description);
-      NotificationManager.info(notif.description, '', 10000)
+      NotificationManager.info(notif.description, '', 6000)
     });
     return () => {
       socket.off("notification");
@@ -77,6 +86,20 @@ const Canvas = ({ shapes, setShapes, username }) => {
       socket.off("users");
     }
   }, [socket, shapes, setShapes]);
+
+  //Updating FrameView
+  //setTimeout ensures FrameViewImage's are only updated once every 3 seconds, for performance reasons
+  useEffect(() => {
+    if(updateUri){
+      setUpdateUri(false);
+      setUri(stageRef.current.toDataURL());
+      setTimeout(() => {
+        setUpdateUri(true)
+      }, 3000)
+      //console.log("URI: " + uri);}
+    }
+
+  });
 
   const handleMouseDown = (e) => {
 	// setTempId((tempId) => generateId());
@@ -151,7 +174,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
 
 	//get shape and modify properties of shape based on mousedrag
     let index = shapes.findIndex((element) => element.id === tempId);
-	console.log(shapes);
+	//console.log(shapes);
 	let tempShape = shapes[index];
     if (tool === "pen") {
       tempShape.points = tempShape.points.concat([pos.x, pos.y]);
@@ -204,9 +227,24 @@ const Canvas = ({ shapes, setShapes, username }) => {
     if (showUsers)
       return players.map(p => <p>{p.nickname}</p>)
   }
+  
+
+  function undo(){
+    var toBeUndone = shapes.length - 1;
+    redoStack.push(shapes.splice(toBeUndone, 1));
+    setShapes([...shapes]);
+    return;
+  }
+
+  function redo(){
+    /*var toBeRedone = redoStack.pop();
+    shapes.splice(shapes.length - 1, 0, toBeRedone);
+    setShapes([...shapes]);*/
+    return;
+  }
 
   return (
-    <div className="Container">
+    <div className="Container" style={{maxWidth:width}}>
       <div className="userList">
         <h3 onClick={() => setShowUsers((prevState) => !prevState)}>Users [v]</h3>
         <UserDropdown />
@@ -229,11 +267,12 @@ const Canvas = ({ shapes, setShapes, username }) => {
       <div className="Canvas-Container">
         <Stage
           className="Canvas"
-          width={width - 120}
+          width={width - 560}
           height={height - 120}
           onMouseDown={handleMouseDown}
           onMousemove={handleMouseMove}
           onMouseup={handleMouseUp}
+          ref={stageRef}
         >
           <Layer>
             {shapes.map((shape, i) => (
@@ -260,10 +299,18 @@ const Canvas = ({ shapes, setShapes, username }) => {
             </div>
           </div>
         </section>
+        <button onClick={undo}>Undo</button>
+        <button onClick={redo}>Redo</button>
       </div>
 
-      <div className="NotificationContainer">
-        <NotificationContainer />
+      <div className='RightContainer' style={{height: height-120}}>
+        <div className="NotificationContainer">
+          <NotificationContainer />
+        </div>
+
+        <>
+            <FrameView numFrames={3} frame={uri} width={width} height={height}/>
+        </>
       </div>
     </div>
   );
