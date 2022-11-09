@@ -141,7 +141,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
           listening: false,
           user: "test",
         };
-        // undoStack.push(tempId);
+        updateUndoStack((undoStack) => [...undoStack, tempId]);
       }
       if (tool === "circle") {
         lastShape = {
@@ -157,12 +157,11 @@ const Canvas = ({ shapes, setShapes, username }) => {
           listening: false,
           user: "test",
         };
-        // undoStack.push(tempId);
+        updateUndoStack((undoStack) => [...undoStack, tempId]);
       }
       if (tool === "eraser") {
         return;
       }
-      // setShapes(shapes.concat(lastShape));
       socket.emit("sendData", JSON.stringify(lastShape));
     } catch (err) {
       console.log("oops! your tool broke!" + err);
@@ -236,16 +235,28 @@ const Canvas = ({ shapes, setShapes, username }) => {
   };
 
   function undo() {
+    if (undoStack.length === 0) {
+      return;
+    }
     let toBeUndone = undoStack[undoStack.length - 1];
     updateUndoStack(undoStack.filter((item) => item !== toBeUndone));
+    let popped = shapes.filter((element) => element.id === toBeUndone);
+    console.log(popped);
+    updateRedoStack((redoStack) => [...redoStack, popped]);
     socket.emit("removeShape", toBeUndone);
     return;
   }
 
   function redo() {
-    var toBeRedone = redoStack.pop();
-    shapes.splice(shapes.length - 1, 0, toBeRedone);
-    setShapes([...shapes]);
+    if (redoStack.length === 0) {
+      return;
+    }
+    let toBeRedone = redoStack[redoStack.length - 1];
+    console.log(toBeRedone);
+    updateRedoStack(redoStack.filter((item) => item !== toBeRedone));
+    let id = toBeRedone.id;
+    updateUndoStack((undoStack) => [...undoStack, id]);
+    socket.emit("sendData", JSON.stringify(toBeRedone));
     return;
   }
 
