@@ -124,6 +124,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
           user: "test",
         };
         updateUndoStack((undoStack) => [...undoStack, tempId]);
+        console.log(undoStack.length);
       }
       if (tool === "rectangle") {
         lastShape = {
@@ -235,10 +236,8 @@ const Canvas = ({ shapes, setShapes, username }) => {
   };
 
   function undo() {
-    let toBeUndone = undoStack.pop();
-    console.log(toBeUndone);
-    let index = shapes.findIndex((element) => element.id === toBeUndone);
-    redoStack.push(shapes[index]);
+    let toBeUndone = undoStack[undoStack.length - 1];
+    updateUndoStack(undoStack.filter((item) => item !== toBeUndone));
     socket.emit("removeShape", toBeUndone);
     return;
   }
