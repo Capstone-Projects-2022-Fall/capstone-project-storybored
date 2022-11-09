@@ -98,11 +98,7 @@
   font-size: larger;
 }
 
-.Container .userList h3{
-  cursor: pointer;
-}
-
-.Container .userList p{
+.Container .userList p, h3{
   margin: 0;
   cursor: default;
 }

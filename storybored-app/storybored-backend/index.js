@@ -27,6 +27,9 @@ const io = require("socket.io")(server,
     }
   });
 
+let shapes = [];
+shapes.push([]);
+
 const addUser = (id, nickname, room) => {
 
   for (c in connected_clients) {
@@ -66,13 +69,28 @@ io.on("connection", (socket) => {
     console.log(`${user.nickname} joined`);
     socket.broadcast.emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
     io.emit("users", getUsers());
+    io.to(socket.id).emit("giveFrame", {newShapes: shapes[0], newIndex: 0})
     callback();
   });
 
   socket.on("sendData", (data) => {
     const user = getUser(socket.id);
     if (!user) return;
+    const myData = JSON.parse(data)
+    console.log("Index: " + myData.frameIndex)
+    shapes[myData.frameIndex].push(data)
     io.emit("message", { user: user.nickname, text: data });
+  });
+
+  socket.on("newFrame", (data) => {
+    shapes.push([]);
+  });
+
+  socket.on("getFrame", (frameIndex) => {
+    let response;
+    if(frameIndex > shapes.length-1 || frameIndex < 0) response = null;
+    else response = shapes[frameIndex]
+    io.to(socket.id).emit("giveFrame", {newShapes: response, newIndex: frameIndex})
   });
 
   socket.on("disconnect", () => {

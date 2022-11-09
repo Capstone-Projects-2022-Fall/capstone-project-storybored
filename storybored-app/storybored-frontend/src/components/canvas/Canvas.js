@@ -31,10 +31,11 @@ const Canvas = ({ shapes, setShapes, username }) => {
   // const socket = useContext(SocketContext);
 //   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
-  const [showUsers, setShowUsers] = useState(false);
 
   const [uri, setUri] = useState('')
   const [updateUri, setUpdateUri] = useState(true)
+  const [frameIndex, setFrameIndex] = useState(0)
+
   let lastShape;
   const stageRef = React.useRef(null);
 
@@ -61,8 +62,9 @@ const Canvas = ({ shapes, setShapes, username }) => {
     });
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
+
       //console.log(show);
-	  if(show.id === null){return;}
+	  if(show.id === null || show.frameIndex !== frameIndex){return;}
       let index = shapes.findLastIndex((element) => element.id === show.id);
       //console.log(index);
       if (index < 0) {
@@ -80,6 +82,24 @@ const Canvas = ({ shapes, setShapes, username }) => {
       console.log(notif.description);
       NotificationManager.info(notif.description, '', 6000)
     });
+
+
+    socket.on("giveFrame", (data) => {
+      //console.log(data)
+      if(data.newShapes === null) return;
+
+      
+      let myShapes = []
+      data.newShapes.forEach(element => {
+        const newShape = JSON.parse(element)
+        myShapes.push(newShape)
+      });
+      setShapes([...myShapes])
+      setFrameIndex(data.newIndex);
+      //setShapes([...data.newShapes])
+    });
+    
+
     return () => {
       socket.off("notification");
       socket.off("message");
@@ -118,6 +138,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
         lineCap: "round",
         draggable: false,
         user: "test",
+        frameIndex: frameIndex
       };
     }
     if (tool === "rectangle") {
@@ -134,6 +155,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
         draggable: false,
         listening: false,
         user: "test",
+        frameIndex: frameIndex
       };
     }
     if (tool === "circle") {
@@ -149,6 +171,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
         draggable: false,
         listening: false,
         user: "test",
+        frameIndex: frameIndex
       };
     }
     if (tool === "eraser") {
@@ -189,6 +212,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
       let rad = Math.sqrt(x * x + y * y);
       tempShape.radius = rad;
     }
+
     socket.emit("sendData", JSON.stringify(tempShape));
 }catch(TypeError){
 		console.log("oops! your tool broke!");
@@ -224,8 +248,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
   ];
 
   const UserDropdown = () => {
-    if (showUsers)
-      return players.map(p => <p>{p.nickname}</p>)
+    return players.map(p => <p>{p.nickname}</p>)
   }
   
 
@@ -243,10 +266,28 @@ const Canvas = ({ shapes, setShapes, username }) => {
     return;
   }
 
+  const createNewFrame = () => {
+    socket.emit("newFrame", null);
+  }
+
+  const moveToPrevFrame = () => {
+    if(frameIndex>0){
+      socket.emit("getFrame", frameIndex-1)
+    }
+  }
+
+  const moveToNextFrame = () => {
+      socket.emit("getFrame", frameIndex+1)
+    }
+  
+
   return (
     <div className="Container" style={{maxWidth:width}}>
+      <button onClick={moveToPrevFrame}>Prev Frame</button>
+      <button onClick={moveToNextFrame}>Next Frame</button>
+
       <div className="userList">
-        <h3 onClick={() => setShowUsers((prevState) => !prevState)}>Users [v]</h3>
+        <h3>Users</h3>
         <UserDropdown />
       </div>
       <Toolbar items={toolbar_params} />
@@ -299,6 +340,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
             </div>
           </div>
         </section>
+        <button onClick={createNewFrame}>New Frame</button>
         <button onClick={undo}>Undo</button>
         <button onClick={redo}>Redo</button>
       </div>
