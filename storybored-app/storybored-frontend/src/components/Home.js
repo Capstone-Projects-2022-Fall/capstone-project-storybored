@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 
 const Home = ({ callback }) => {
   const navigate = useNavigate();
-  const [inputValue, setInputValue] = useState("");
+  const [nameValue, setNameValue] = useState("");
+  const [roomValue, setRoomValue] = useState("");
   const navToCreateRoom = () => {
     navigate("/CreateRoom");
   };
 
   const submit = () => {
-    callback(inputValue);
+    callback(nameValue, roomValue);
     navToCreateRoom();
   };
 
@@ -23,7 +24,13 @@ const Home = ({ callback }) => {
         <label htmlFor="username-input" id="username-label">
           Username:
         </label>
-        <input type="text" id="username-input" onChange={(e) => setInputValue(e.target.value)}></input>
+        <input type="text" id="username-input" onChange={(e) => setNameValue(e.target.value)}></input>
+      </form>
+      <form>
+        <label htmlFor="room-input" id="room-label">
+          Room:
+        </label>
+        <input type="text" id="room-input" onChange={(e) => setRoomValue(e.target.value)}></input>
       </form>
       <button id="create-room-button" onClick={submit}>
         That's me!

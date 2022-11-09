@@ -17,9 +17,7 @@ const height = window.innerHeight;
 const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
-const room = 4;
-
-const Canvas = ({ shapes, setShapes, username }) => {
+const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const [tool, setTool] = useState("pen");
   const [strokeColor, setStrokeColor] = useState("#000"); //black
   const [fillColor, setFillColor] = useState("#fff"); //white
@@ -29,8 +27,6 @@ const Canvas = ({ shapes, setShapes, username }) => {
   const [undoStack, updateUndoStack] = useState([]);
   const [redoStack, updateRedoStack] = useState([]);
   const isDrawing = useRef(false);
-  // const socket = useContext(SocketContext);
-  //   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
 
@@ -39,9 +35,8 @@ const Canvas = ({ shapes, setShapes, username }) => {
   let lastShape;
   const stageRef = React.useRef(null);
 
-  // const location = useLocation();
-
   const nickname = username;
+  const room = roomName;
   useEffect(() => {
     socket.emit("join", { nickname, room }, (error) => {
       if (error) {
