@@ -10,6 +10,7 @@ const { map } = require("bluebird");
 
 const PORT = 7007;
 const shape_map = new Map();
+// const room_map = new Map();
 
 /**
  * Creates endpoints for HTTP response and requests.
@@ -56,12 +57,6 @@ const removeUser = (id) => {
   }
 };
 
-// async function updateClient(socketId, socket) {
-//   for (let shape of shape_map.keys()) {
-//     let response = JSON.stringify(shape);
-//     io.to(socketId).emit("message", { user: response.user, text: response });
-//   }
-// }
 
 //creating event handlers for socket message received events
 io.on("connection", (socket) => {
@@ -85,6 +80,11 @@ io.on("connection", (socket) => {
     let response = JSON.stringify(shape_map.get(shape.id));
     if (!user) return;
     io.to(user.room).emit("message", { user: user.nickname, text: response });
+  });
+
+  socket.on("updateCanvas", (data) => {
+    const user = getUser(socket.id);
+    socket.to(user).emit("update", shape_map);
   });
 
   socket.on("removeShape", (data) => {
