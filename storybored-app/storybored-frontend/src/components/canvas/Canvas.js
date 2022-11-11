@@ -47,8 +47,10 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       }
       return;
     });
+  }, []);
 
-    // socket.emit("updateCanvas", 0, () => {});
+  useEffect(() => {
+    socket.emit("updateCanvas", 0);
   }, []);
 
   useEffect(() => {
@@ -79,7 +81,9 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     });
 
     socket.on("update", (data) => {
-      console.log(data);
+      let shape_update = new Map(Object.entries(JSON.parse(data.message)));
+      let fresh_shapes = Array.from(shape_update.values());
+      setShapes([...shapes, ...fresh_shapes]);
     });
 
     socket.on("notification", (notif) => {
@@ -90,6 +94,8 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       socket.off("notification");
       socket.off("message");
       socket.off("users");
+      socket.off("deletshape");
+      socket.off("update");
     };
   }, [socket, shapes, setShapes]);
 
@@ -125,7 +131,6 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
           user: "test",
         };
         updateUndoStack((undoStack) => [...undoStack, tempId]);
-        console.log(undoStack.length);
       }
       if (tool === "rectangle") {
         lastShape = {
@@ -164,6 +169,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         return;
       }
       socket.emit("sendData", JSON.stringify(lastShape));
+      return;
     } catch (err) {
       console.log(err);
       return;
@@ -198,8 +204,9 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         tempShape.radius = rad;
       }
       socket.emit("sendData", JSON.stringify(tempShape));
-    } catch (TypeError) {
-      console.log("oops! your tool broke!");
+      return;
+    } catch (err) {
+      console.log(err);
       return;
     }
   };
