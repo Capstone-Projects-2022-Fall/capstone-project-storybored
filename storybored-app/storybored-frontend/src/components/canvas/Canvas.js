@@ -47,6 +47,8 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       }
       return;
     });
+
+    // socket.emit("updateCanvas", 0, () => {});
   }, []);
 
   useEffect(() => {
@@ -74,6 +76,10 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
 
     socket.on("deleteshape", (data) => {
       setShapes(shapes.filter((shape) => shape.id !== data));
+    });
+
+    socket.on("update", (data) => {
+      console.log(data);
     });
 
     socket.on("notification", (notif) => {
@@ -159,7 +165,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       }
       socket.emit("sendData", JSON.stringify(lastShape));
     } catch (err) {
-      console.log("oops! your tool broke!" + err);
+      console.log(err);
       return;
     }
   };

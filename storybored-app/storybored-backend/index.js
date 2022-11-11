@@ -9,8 +9,7 @@ const { map } = require("bluebird");
 //
 
 const PORT = 7007;
-const shape_map = new Map();
-// const room_map = new Map();
+// const shape_map = new Map();
 
 /**
  * Creates endpoints for HTTP response and requests.
@@ -20,7 +19,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.locals.index = 1000000000;
-const connected_clients = []; //const refernce, mutable array
+// const connected_clients = []; //const refernce, mutable array
+const rooms = new Map();
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
@@ -28,8 +28,15 @@ const io = require("socket.io")(server, {
   },
 });
 
+let room_data = {
+  id: "test",
+  users: [],
+  URI: "",
+  shapes: new Map(),
+};
+
 const addUser = (id, nickname, room) => {
-  for (c in connected_clients) {
+  for (c in room_data.users) {
     if (c.id === id && c.room === room) {
       return;
     }
@@ -37,26 +44,25 @@ const addUser = (id, nickname, room) => {
   if (!nickname) return { error: "Username is required" };
   if (!room) return { error: "Room is required" };
   const user = { id, nickname, room };
-  connected_clients.push(user);
+  room_data.users.push(user);
   return { user };
 };
 
 const getUser = (id) => {
-  let user = connected_clients.find((user) => user.id == id);
+  let user = room_data.users.find((user) => user.id == id);
   return user;
 };
 
 const getUsers = () => {
-  return connected_clients;
+  return room_data.users;
 };
 
 const removeUser = (id) => {
-  const index = connected_clients.findIndex((user) => user.id == id);
+  const index = room_data.users.findIndex((user) => user.id == id);
   if (index !== -1) {
-    return connected_clients.splice(index, 1)[0];
+    return room_data.users.splice(index, 1)[0];
   }
 };
-
 
 //creating event handlers for socket message received events
 io.on("connection", (socket) => {
@@ -76,22 +82,23 @@ io.on("connection", (socket) => {
   socket.on("sendData", (data) => {
     const user = getUser(socket.id);
     let shape = JSON.parse(data);
-    shape_map.set(shape.id, shape);
-    let response = JSON.stringify(shape_map.get(shape.id));
+    room_data.shapes.set(shape.id, shape);
+    let response = JSON.stringify(room_data.shapes.get(shape.id));
     if (!user) return;
     io.to(user.room).emit("message", { user: user.nickname, text: response });
   });
 
-  socket.on("updateCanvas", (data) => {
-    const user = getUser(socket.id);
-    socket.to(user).emit("update", shape_map);
-  });
+  //   socket.on("updateCanvas", (data) => {
+  //     //   data will be index of canvas to be retrieved
+  //     const user = getUser(socket.id);
+  //     socket.to(user).emit("update", { data: room_data.shapes });
+  //   });
 
   socket.on("removeShape", (data) => {
     console.log(data);
-    console.log(shape_map);
+    console.log(room_data.shapes);
     const user = getUser(socket.id);
-    shape_map.delete(data);
+    room_data.shapes.delete(data);
     io.to(user.room).emit("deleteshape", data);
   });
 
@@ -102,8 +109,8 @@ io.on("connection", (socket) => {
       io.emit("notification", { title: "Someone left", description: `${user.nickname} left` });
       io.emit("users", getUsers());
     }
-    if (connected_clients.length == 0) {
-      shape_map.clear();
+    if (room_data.users.length == 0) {
+      room_data.shapes.clear();
     }
   });
 });
