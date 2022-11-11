@@ -20,7 +20,7 @@ const Home = ({ callback }) => {
       Welcome to StoryBored, a collaborative drawing application that allows you to draw on multiple frames in real-time with friends anywhere on the
       planet
       <h2>Enter your name and click 'That's me!' to continue!</h2>
-      <form>
+      <form onSubmit={submit}>
         <label htmlFor="username-input" id="username-label">
           Username:
         </label>

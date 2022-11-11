@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(cors());
 app.locals.index = 1000000000;
 // const connected_clients = []; //const refernce, mutable array
-const rooms = new Map();
+
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
@@ -28,15 +28,24 @@ const io = require("socket.io")(server, {
   },
 });
 
-let room_data = {
-  id: "test",
-  users: [],
-  URI: "",
-  shapes: new Map(),
-};
-
+const rooms = new Map();
+// let room_data = {
+//   id: "test",
+//   users: [],
+//   URI: "",
+//   shapes: new Map(),
+// };
+//need to route to room and then to user to update local data
 const addUser = (id, nickname, room) => {
-  for (c in room_data.users) {
+  if (!rooms.contains(room)) {
+    rooms.put(room, {
+      id: room,
+      users: [],
+      URI: "",
+      shapes: new Map(),
+    });
+  }
+  for (c in rooms.get(room).users) {
     if (c.id === id && c.room === room) {
       return;
     }
@@ -44,12 +53,12 @@ const addUser = (id, nickname, room) => {
   if (!nickname) return { error: "Username is required" };
   if (!room) return { error: "Room is required" };
   const user = { id, nickname, room };
-  room_data.users.push(user);
+  rooms.get(room).users.push(user);
   return { user };
 };
 
-const getUser = (id) => {
-  let user = room_data.users.find((user) => user.id == id);
+const getUser = (room, id) => {
+  let user = rooms.get(user).find((user) => user.id == id);
   return user;
 };
 
@@ -89,10 +98,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("updateCanvas", (data) => {
-    // console.log("we pinged it baby!");
-    //   data will be index of canvas to be retrieved
     const user = getUser(socket.id);
-    // console.log(user);
     const msg = JSON.stringify(Object.fromEntries(room_data.shapes));
     io.to(user.id).emit("update", { message: msg });
   });
