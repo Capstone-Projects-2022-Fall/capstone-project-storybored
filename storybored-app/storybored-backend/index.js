@@ -88,15 +88,18 @@ io.on("connection", (socket) => {
     io.to(user.room).emit("message", { user: user.nickname, text: response });
   });
 
-  //   socket.on("updateCanvas", (data) => {
-  //     //   data will be index of canvas to be retrieved
-  //     const user = getUser(socket.id);
-  //     socket.to(user).emit("update", { data: room_data.shapes });
-  //   });
+  socket.on("updateCanvas", (data) => {
+    // console.log("we pinged it baby!");
+    //   data will be index of canvas to be retrieved
+    const user = getUser(socket.id);
+    // console.log(user);
+    const msg = JSON.stringify(Object.fromEntries(room_data.shapes));
+    io.to(user.id).emit("update", { message: msg });
+  });
 
   socket.on("removeShape", (data) => {
-    console.log(data);
-    console.log(room_data.shapes);
+    // console.log(data);
+    // console.log(room_data.shapes);
     const user = getUser(socket.id);
     room_data.shapes.delete(data);
     io.to(user.room).emit("deleteshape", data);
