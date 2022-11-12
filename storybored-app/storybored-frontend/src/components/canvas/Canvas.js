@@ -12,8 +12,8 @@ import { NotificationContainer, NotificationManager } from "react-notifications"
 
 const width = window.innerWidth;
 const height = window.innerHeight;
-const ENDPOINT = "139.144.172.98:7007";
-// const ENDPOINT = "http://localhost:7007";
+// const ENDPOINT = "139.144.172.98:7007";
+const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
 const Canvas = ({ shapes, setShapes, username, roomName }) => {
@@ -177,10 +177,13 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         };
         updateUndoStack((undoStack) => [...undoStack, tempId]);
       }
+
       if (tool === "eraser") {
         return;
       }
-    } catch (err) { }
+      socket.emit("sendData", room, JSON.stringify(lastShape));
+      return;
+    } catch (err) {}
   };
 
   const handleMouseMove = (e) => {
@@ -219,7 +222,6 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       console.log(err);
       return;
     }
-
   };
 
   const handleMouseUp = () => {
@@ -407,4 +409,3 @@ export default Canvas;
 //         listening: false,
 //         user: "test",
 //       },
-
