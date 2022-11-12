@@ -89,7 +89,7 @@ io.on("connection", (socket) => {
     socket.join(room);
     console.log(`${user.nickname} joined`);
     socket.broadcast.emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
-    io.emit("users", getUsers(user.room));
+    io.to(user.room).emit("users", getUsers(user.room));
     // updateClient(socket.id, socket);
     callback();
   });
@@ -121,9 +121,8 @@ io.on("connection", (socket) => {
     const user = removeUser(socket.id);
     if (user) {
       console.log(`${user.nickname} left the server`);
-      io.emit("notification", { title: "Someone left", description: `${user.nickname} left` });
-      io.emit("users", getUsers(user.room));
-
+      io.to(user.room).emit("notification", { title: "Someone left", description: `${user.nickname} left` });
+      io.to(user.room).emit("users", getUsers(user.room));
       if (rooms.get(user.room).users.length == 0) {
         rooms.delete(user.room);
       }
