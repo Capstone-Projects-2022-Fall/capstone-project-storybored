@@ -1,6 +1,7 @@
 import React, { useState, useRef,  useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
+import { BiShapePolygon} from "react-icons/bi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
 import FrameView from "../FrameView";
@@ -13,8 +14,8 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 
 const width = window.innerWidth;
 const height = window.innerHeight;
-const ENDPOINT = "139.144.172.98:7007"
-//const ENDPOINT = "http://localhost:7007";
+//const ENDPOINT = "139.144.172.98:7007"
+const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
 const room = 4;
@@ -151,6 +152,21 @@ const Canvas = ({ shapes, setShapes, username }) => {
         user: "test",
       };
     }
+    if (tool === "custom shape") {
+      lastShape = {
+        type: "line",
+        id: tempId,
+        points: [pos.x, pos.y, pos.x, pos.y],
+        stroke: strokeColor,
+        strokeWidth: strokeWidth,
+        fill: fillColor,
+        closed: true,
+        tension: 0.5,
+        lineCap: "round",
+        draggable: false,
+        user: "test",
+      };
+    }
     if (tool === "eraser") {
       return;
     }
@@ -189,6 +205,9 @@ const Canvas = ({ shapes, setShapes, username }) => {
       let rad = Math.sqrt(x * x + y * y);
       tempShape.radius = rad;
     }
+    if (tool === "custom shape") {
+      tempShape.points = tempShape.points.concat([pos.x, pos.y]);
+    }
     socket.emit("sendData", JSON.stringify(tempShape));
 }catch(TypeError){
 		console.log("oops! your tool broke!");
@@ -211,6 +230,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
   const setPen = () => setTool("pen");
   const setRect = () => setTool("rectangle");
   const setCircle = () => setTool("circle");
+  const setCustom = () => setTool("custom shape");
   const toggleColorSelectors = () => {
     setShowColorSelectors((prevState) => !prevState);
   };
@@ -220,6 +240,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
     { func: setPen, icon: <GiPencil /> },
     { func: setRect, icon: <GiSquare /> },
     { func: setCircle, icon: <GiCircle /> },
+    { func: setCustom, icon: <BiShapePolygon /> },
     { func: toggleColorSelectors, icon: <GiLargePaintBrush /> },
   ];
 
