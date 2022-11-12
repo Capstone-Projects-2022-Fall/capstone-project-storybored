@@ -37,12 +37,12 @@ const rooms = new Map();
 // };
 //need to route to room and then to user to update local data
 const addUser = (id, nickname, room) => {
-  if (!rooms.contains(room)) {
+  if (!rooms.has(room)) {
     rooms.put(room, {
       id: room,
       users: [],
-      URI: "",
-      shapes: new Map(),
+      URI: ["", "", ""],
+      shapes: [new Map(), new Map(), new Map()],
     });
   }
   for (c in rooms.get(room).users) {
@@ -58,18 +58,18 @@ const addUser = (id, nickname, room) => {
 };
 
 const getUser = (room, id) => {
-  let user = rooms.get(user).find((user) => user.id == id);
+  let user = rooms.get(room).find((user) => user.id == id);
   return user;
 };
 
-const getUsers = () => {
-  return room_data.users;
+const getUsers = (room) => {
+  return rooms.get(room).users;
 };
 
-const removeUser = (id) => {
-  const index = room_data.users.findIndex((user) => user.id == id);
+const removeUser = (id) => { //change to get passed a user object
+  const index = rooms.get(user.room).users.findIndex((user) => user.id == id);
   if (index !== -1) {
-    return room_data.users.splice(index, 1)[0];
+    return rooms.get(user.id).users.splice(index, 1)[0];
   }
 };
 
@@ -83,7 +83,7 @@ io.on("connection", (socket) => {
     socket.join(room);
     console.log(`${user.nickname} joined`);
     socket.broadcast.emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
-    io.emit("users", getUsers());
+    io.emit("users", getUsers(user.room));
     // updateClient(socket.id, socket);
     callback();
   });
@@ -91,15 +91,15 @@ io.on("connection", (socket) => {
   socket.on("sendData", (data) => {
     const user = getUser(socket.id);
     let shape = JSON.parse(data);
-    room_data.shapes.set(shape.id, shape);
-    let response = JSON.stringify(room_data.shapes.get(shape.id));
+    rooms.get(user.room).shapes.set(shape.id, shape);
+    let response = JSON.stringify(rooms.get(user.room).shapes.get(shape.id));
     if (!user) return;
     io.to(user.room).emit("message", { user: user.nickname, text: response });
   });
 
   socket.on("updateCanvas", (data) => {
     const user = getUser(socket.id);
-    const msg = JSON.stringify(Object.fromEntries(room_data.shapes));
+    const msg = JSON.stringify(Object.fromEntries(rooms.get(user.room).shapes));
     io.to(user.id).emit("update", { message: msg });
   });
 
@@ -107,7 +107,7 @@ io.on("connection", (socket) => {
     // console.log(data);
     // console.log(room_data.shapes);
     const user = getUser(socket.id);
-    room_data.shapes.delete(data);
+    rooms.get(user.room).shapes.delete(data);
     io.to(user.room).emit("deleteshape", data);
   });
 
@@ -118,8 +118,8 @@ io.on("connection", (socket) => {
       io.emit("notification", { title: "Someone left", description: `${user.nickname} left` });
       io.emit("users", getUsers());
     }
-    if (room_data.users.length == 0) {
-      room_data.shapes.clear();
+    if (rooms.get(user.room).users.length == 0) {
+      rooms.get(user.room).shapes.clear();
     }
   });
 });
