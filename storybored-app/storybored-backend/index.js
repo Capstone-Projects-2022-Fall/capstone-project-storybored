@@ -125,7 +125,7 @@ io.on("connection", (socket) => {
       io.emit("users", getUsers(user.room));
     }
     if (rooms.get(user.room).users.length == 0) {
-      rooms.delete(room);
+      rooms.delete(user.room);
     }
   });
 });
