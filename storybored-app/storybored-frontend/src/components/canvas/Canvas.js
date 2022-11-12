@@ -11,8 +11,8 @@ import { NotificationContainer, NotificationManager } from "react-notifications"
 
 const width = window.innerWidth;
 const height = window.innerHeight;
-// const ENDPOINT = "139.144.172.98:7007";
-const ENDPOINT = "http://localhost:7007";
+const ENDPOINT = "139.144.172.98:7007";
+// const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
 const Canvas = ({ shapes, setShapes, username, roomName }) => {
@@ -27,6 +27,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const isDrawing = useRef(false);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
+  const [focusedCanvas, setFocusedCanvas] = useState(0);
   //usestate to keep track of index of focused canvas
   const [uri, setUri] = useState("");
   const [updateUri, setUpdateUri] = useState(true);
@@ -48,7 +49,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   }, []);
 
   useEffect(() => {
-    socket.emit("updateCanvas", room, 0);
+    socket.emit("updateCanvas", room, focusedCanvas);
   }, []);
 
   useEffect(() => {
