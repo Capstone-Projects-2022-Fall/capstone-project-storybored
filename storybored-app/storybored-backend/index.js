@@ -123,9 +123,10 @@ io.on("connection", (socket) => {
       console.log(`${user.nickname} left the server`);
       io.emit("notification", { title: "Someone left", description: `${user.nickname} left` });
       io.emit("users", getUsers(user.room));
-    }
-    if (rooms.get(user.room).users.length == 0) {
-      rooms.delete(user.room);
+
+      if (rooms.get(user.room).users.length == 0) {
+        rooms.delete(user.room);
+      }
     }
   });
 });
