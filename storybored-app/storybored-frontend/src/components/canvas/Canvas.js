@@ -287,9 +287,9 @@ const Canvas = ({ shapes, setShapes, username }) => {
     return;
   }
 
-  const createNewFrame = () => {
+  /* const createNewFrame = () => {
     socket.emit("newFrame", null);
-  }
+  } */
 
   const moveToPrevFrame = () => {
     if(frameIndex>0){
@@ -361,7 +361,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
             </div>
           </div>
         </section>
-        <button onClick={createNewFrame}>New Frame</button>
+        {/*<button onClick={createNewFrame}>New Frame</button>*/}
         <button onClick={undo}>Undo</button>
         <button onClick={redo}>Redo</button>
       </div>

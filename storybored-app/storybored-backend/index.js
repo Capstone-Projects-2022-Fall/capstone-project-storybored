@@ -29,6 +29,8 @@ const io = require("socket.io")(server,
 
 let shapes = [];
 shapes.push([]);
+shapes.push([]);
+shapes.push([]);
 
 const addUser = (id, nickname, room) => {
 
@@ -83,10 +85,10 @@ io.on("connection", (socket) => {
     io.to(user.room).emit("message", { user: user.nickname, text: data });
   });
 
-
+/* 
   socket.on("newFrame", (data) => {
     shapes.push([]);
-  });
+  }); */
 
   socket.on("getFrame", (frameIndex) => {
     let response;
