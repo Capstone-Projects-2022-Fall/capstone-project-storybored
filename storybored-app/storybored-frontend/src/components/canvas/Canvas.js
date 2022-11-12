@@ -5,16 +5,14 @@ import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
 import FrameView from "../FrameView";
 import "./styles.css";
-// import { SocketContext } from "../../socketContext";
-// import { UsersContext } from "../../usersContext";
 import io from "socket.io-client";
 import { Stage, Layer } from "react-konva";
 import { NotificationContainer, NotificationManager } from "react-notifications";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
-const ENDPOINT = "139.144.172.98:7007";
-// const ENDPOINT = "http://localhost:7007";
+// const ENDPOINT = "139.144.172.98:7007";
+const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
 const Canvas = ({ shapes, setShapes, username, roomName }) => {
@@ -29,7 +27,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const isDrawing = useRef(false);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
-
+  //usestate to keep track of index of focused canvas
   const [uri, setUri] = useState("");
   const [updateUri, setUpdateUri] = useState(true);
   let lastShape;
@@ -50,7 +48,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   }, []);
 
   useEffect(() => {
-    socket.emit("updateCanvas", 0);
+    socket.emit("updateCanvas", room, 0);
   }, []);
 
   useEffect(() => {
@@ -60,17 +58,13 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     });
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
-      //console.log(show);
       if (show.id === null) {
         return;
       }
       let index = shapes.findLastIndex((element) => element.id === show.id);
-      //console.log(index);
       if (index < 0) {
-        //console.log("here");
         setShapes(shapes.concat(show));
       } else {
-        //console.log("there");
         shapes[index] = show;
         setShapes([...shapes]);
       }
@@ -168,7 +162,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       if (tool === "eraser") {
         return;
       }
-      socket.emit("sendData", JSON.stringify(lastShape));
+      socket.emit("sendData", room, JSON.stringify(lastShape));
       return;
     } catch (err) {
       console.log(err);
@@ -203,7 +197,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         let rad = Math.sqrt(x * x + y * y);
         tempShape.radius = rad;
       }
-      socket.emit("sendData", JSON.stringify(tempShape));
+      socket.emit("sendData", room, JSON.stringify(tempShape));
       return;
     } catch (err) {
       console.log(err);
@@ -264,7 +258,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     updateRedoStack(redoStack.filter((item) => item !== toBeRedone));
     let id = toBeRedone.id;
     updateUndoStack((undoStack) => [...undoStack, id]);
-    socket.emit("sendData", JSON.stringify(toBeRedone));
+    socket.emit("sendData", room, JSON.stringify(toBeRedone));
     return;
   }
 

@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(cors());
 app.locals.index = 1000000000;
 // const connected_clients = []; //const refernce, mutable array
-
+// set up ping interval and ping timeout here
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
@@ -38,7 +38,7 @@ const rooms = new Map();
 //need to route to room and then to user to update local data
 const addUser = (id, nickname, room) => {
   if (!rooms.has(room)) {
-    rooms.put(room, {
+    rooms.set(room, {
       id: room,
       users: [],
       URI: ["", "", ""],
@@ -58,7 +58,7 @@ const addUser = (id, nickname, room) => {
 };
 
 const getUser = (room, id) => {
-  let user = rooms.get(room).find((user) => user.id == id);
+  let user = rooms.get(room).users.find((user) => user.id == id);
   return user;
 };
 
@@ -67,10 +67,16 @@ const getUsers = (room) => {
 };
 
 const removeUser = (id) => { //change to get passed a user object
-  const index = rooms.get(user.room).users.findIndex((user) => user.id == id);
-  if (index !== -1) {
-    return rooms.get(user.id).users.splice(index, 1)[0];
+  for (let room of rooms.values()) {
+    const index = room.users.findIndex((user) => user.id === id)
+    if (index !== -1) {
+      return room.users.splice(index, 1)[0];
+    }
   }
+  // const index = rooms.get(user.room).users.findIndex((user) => user.id == id);
+  // if (index !== -1) {
+  //   return rooms.get(user.id).users.splice(index, 1)[0];
+  // }
 };
 
 //creating event handlers for socket message received events
@@ -88,26 +94,26 @@ io.on("connection", (socket) => {
     callback();
   });
 
-  socket.on("sendData", (data) => {
-    const user = getUser(socket.id);
+  socket.on("sendData", (room, data) => {
+    const user = getUser(room, socket.id);
     let shape = JSON.parse(data);
-    rooms.get(user.room).shapes.set(shape.id, shape);
-    let response = JSON.stringify(rooms.get(user.room).shapes.get(shape.id));
+    rooms.get(user.room).shapes[0].set(shape.id, shape);
+    let response = JSON.stringify(rooms.get(user.room).shapes[0].get(shape.id));
     if (!user) return;
     io.to(user.room).emit("message", { user: user.nickname, text: response });
   });
 
-  socket.on("updateCanvas", (data) => {
-    const user = getUser(socket.id);
-    const msg = JSON.stringify(Object.fromEntries(rooms.get(user.room).shapes));
+  socket.on("updateCanvas", (room, data) => {
+    const user = getUser(room, socket.id);
+    const msg = JSON.stringify(Object.fromEntries(rooms.get(user.room).shapes[data]));
     io.to(user.id).emit("update", { message: msg });
   });
 
-  socket.on("removeShape", (data) => {
+  socket.on("removeShape", (room, data) => {
     // console.log(data);
     // console.log(room_data.shapes);
-    const user = getUser(socket.id);
-    rooms.get(user.room).shapes.delete(data);
+    const user = getUser(room, socket.id);
+    rooms.get(user.room).shapes[0].delete(data);
     io.to(user.room).emit("deleteshape", data);
   });
 
@@ -116,10 +122,10 @@ io.on("connection", (socket) => {
     if (user) {
       console.log(`${user.nickname} left the server`);
       io.emit("notification", { title: "Someone left", description: `${user.nickname} left` });
-      io.emit("users", getUsers());
+      io.emit("users", getUsers(user.room));
     }
     if (rooms.get(user.room).users.length == 0) {
-      rooms.get(user.room).shapes.clear();
+      rooms.delete(room);
     }
   });
 });
