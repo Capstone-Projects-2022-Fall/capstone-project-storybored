@@ -1,48 +1,42 @@
-import React, { useState, useRef,  useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
-import { BiShapePolygon} from "react-icons/bi";
+import { BiShapePolygon } from "react-icons/bi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
 import FrameView from "../FrameView";
 import "./styles.css";
-// import { SocketContext } from "../../socketContext";
-// import { UsersContext } from "../../usersContext";
-import io from 'socket.io-client'
+import io from "socket.io-client";
 import { Stage, Layer } from "react-konva";
-import { NotificationContainer, NotificationManager } from 'react-notifications';
+import { NotificationContainer, NotificationManager } from "react-notifications";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
-//const ENDPOINT = "139.144.172.98:7007"
-const ENDPOINT = "http://localhost:7007";
+const ENDPOINT = "139.144.172.98:7007";
+// const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
-const room = 4;
-
-
-const Canvas = ({ shapes, setShapes, username }) => {
+const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const [tool, setTool] = useState("pen");
   const [strokeColor, setStrokeColor] = useState("#000"); //black
   const [fillColor, setFillColor] = useState("#fff"); //white
   const [tempId, setTempId] = useState((tempId) => (tempId = generateId()));
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [showColorSelectors, setShowColorSelectors] = useState(false);
+  const [undoStack, updateUndoStack] = useState([]);
+  const [redoStack, updateRedoStack] = useState([]);
   const isDrawing = useRef(false);
-  // const socket = useContext(SocketContext);
-//   const { setUsers } = useContext(UsersContext);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
-
-  const [uri, setUri] = useState('')
-  const [updateUri, setUpdateUri] = useState(true)
+  const [focusedCanvas, setFocusedCanvas] = useState(0);
+  //usestate to keep track of index of focused canvas
+  const [uri, setUri] = useState("");
+  const [updateUri, setUpdateUri] = useState(true);
   let lastShape;
   const stageRef = React.useRef(null);
 
-  var redoStack = [];
-  // const location = useLocation();
-
   const nickname = username;
+  const room = roomName;
   useEffect(() => {
     socket.emit("join", { nickname, room }, (error) => {
       if (error) {
@@ -52,7 +46,11 @@ const Canvas = ({ shapes, setShapes, username }) => {
         console.log("joined server");
       }
       return;
-    })
+    });
+  }, []);
+
+  useEffect(() => {
+    socket.emit("updateCanvas", room, focusedCanvas);
   }, []);
 
   useEffect(() => {
@@ -62,157 +60,168 @@ const Canvas = ({ shapes, setShapes, username }) => {
     });
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
-      //console.log(show);
-	  if(show.id === null){return;}
+      if (show.id === null) {
+        return;
+      }
       let index = shapes.findLastIndex((element) => element.id === show.id);
-      //console.log(index);
       if (index < 0) {
-        //console.log("here");
         setShapes(shapes.concat(show));
       } else {
-        //console.log("there");
         shapes[index] = show;
-        setShapes([...shapes])
+        setShapes([...shapes]);
       }
     });
 
+    socket.on("deleteshape", (data) => {
+      setShapes(shapes.filter((shape) => shape.id !== data));
+    });
+
+    socket.on("update", (data) => {
+      let shape_update = new Map(Object.entries(JSON.parse(data.message)));
+      let fresh_shapes = Array.from(shape_update.values());
+      setShapes([...shapes, ...fresh_shapes]);
+    });
 
     socket.on("notification", (notif) => {
       console.log(notif.description);
-      NotificationManager.info(notif.description, '', 6000)
+      NotificationManager.info(notif.description, "", 6000);
     });
     return () => {
       socket.off("notification");
       socket.off("message");
       socket.off("users");
-    }
+      socket.off("deletshape");
+      socket.off("update");
+    };
   }, [socket, shapes, setShapes]);
 
   //Updating FrameView
   //setTimeout ensures FrameViewImage's are only updated once every 3 seconds, for performance reasons
   useEffect(() => {
-    if(updateUri){
+    if (updateUri) {
       setUpdateUri(false);
       setUri(stageRef.current.toDataURL());
       setTimeout(() => {
-        setUpdateUri(true)
-      }, 3000)
+        setUpdateUri(true);
+      }, 3000);
       //console.log("URI: " + uri);}
     }
-
   });
 
   const handleMouseDown = (e) => {
-	// setTempId((tempId) => generateId());
+    // setTempId((tempId) => generateId());
     isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
-	try{
-    //put this in a map or something so we can actually maintain this
-    if (tool === "pen") {
-      lastShape = {
-        type: "line",
-        id: tempId,
-        points: [pos.x, pos.y, pos.x, pos.y],
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
-        tension: 0.5,
-        lineCap: "round",
-        draggable: false,
-        user: "test",
-      };
-    }
-    if (tool === "rectangle") {
-      lastShape = {
-        type: "rectangle",
-        id: tempId,
-        x: pos.x,
-        y: pos.y,
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
-        fill: fillColor,
-        width: 5,
-        height: 5,
-        draggable: false,
-        listening: false,
-        user: "test",
-      };
-    }
-    if (tool === "circle") {
-      lastShape = {
-        type: "circle",
-        id: tempId,
-        x: pos.x,
-        y: pos.y,
-        fill: fillColor,
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
-        radius: 4,
-        draggable: false,
-        listening: false,
-        user: "test",
-      };
-    }
-    if (tool === "custom shape") {
-      lastShape = {
-        type: "line",
-        id: tempId,
-        points: [pos.x, pos.y, pos.x, pos.y],
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
-        fill: fillColor,
-        closed: true,
-        tension: 0.5,
-        lineCap: "round",
-        draggable: false,
-        user: "test",
-      };
-    }
-    if (tool === "eraser") {
+    try {
+      //put this in a map or something so we can actually maintain this
+      if (tool === "pen") {
+        lastShape = {
+          type: "line",
+          id: tempId,
+          points: [pos.x, pos.y, pos.x, pos.y],
+          stroke: strokeColor,
+          strokeWidth: strokeWidth,
+          tension: 0.5,
+          lineCap: "round",
+          draggable: false,
+          user: "test",
+        };
+        updateUndoStack((undoStack) => [...undoStack, tempId]);
+      }
+      if (tool === "rectangle") {
+        lastShape = {
+          type: "rectangle",
+          id: tempId,
+          x: pos.x,
+          y: pos.y,
+          stroke: strokeColor,
+          strokeWidth: strokeWidth,
+          fill: fillColor,
+          width: 5,
+          height: 5,
+          draggable: false,
+          listening: false,
+          user: "test",
+        };
+        updateUndoStack((undoStack) => [...undoStack, tempId]);
+      }
+      if (tool === "circle") {
+        lastShape = {
+          type: "circle",
+          id: tempId,
+          x: pos.x,
+          y: pos.y,
+          fill: fillColor,
+          stroke: strokeColor,
+          strokeWidth: strokeWidth,
+          radius: 4,
+          draggable: false,
+          listening: false,
+          user: "test",
+        };
+        updateUndoStack((undoStack) => [...undoStack, tempId]);
+      }
+      if (tool === "custom shape") {
+        lastShape = {
+          type: "line",
+          id: tempId,
+          points: [pos.x, pos.y, pos.x, pos.y],
+          stroke: strokeColor,
+          strokeWidth: strokeWidth,
+          fill: fillColor,
+          closed: true,
+          tension: 0.5,
+          lineCap: "round",
+          draggable: false,
+          user: "test",
+        };
+        updateUndoStack((undoStack) => [...undoStack, tempId]);
+      }
+
+      if (tool === "eraser") {
+        return;
+      }
+      socket.emit("sendData", room, JSON.stringify(lastShape));
       return;
-    }
-    // setShapes(shapes.concat(lastShape));
-    socket.emit("sendData", JSON.stringify(lastShape));
-} catch(TypeError){
-	console.log("oops! your tool broke!");
-	return;
-}
+    } catch (err) {}
   };
 
   const handleMouseMove = (e) => {
-	try{
-    // no drawing - skipping
-    if (!isDrawing.current || tool === "eraser") {
+    try {
+      // no drawing - skipping
+      if (!isDrawing.current || tool === "eraser") {
+        return;
+      }
+      //get pointer position
+      const stage = e.target.getStage();
+      const pos = stage.getPointerPosition();
+
+      //get shape and modify properties of shape based on mousedrag
+      let index = shapes.findIndex((element) => element.id === tempId);
+      //console.log(shapes);
+      let tempShape = shapes[index];
+      if (tool === "pen") {
+        tempShape.points = tempShape.points.concat([pos.x, pos.y]);
+      }
+      if (tool === "rectangle") {
+        tempShape.width = pos.x - tempShape.x;
+        tempShape.height = pos.y - tempShape.y;
+      }
+      if (tool === "circle") {
+        let x = pos.x - tempShape.x;
+        let y = pos.y - tempShape.y;
+        let rad = Math.sqrt(x * x + y * y);
+        tempShape.radius = rad;
+      }
+      if (tool === "custom shape") {
+        tempShape.points = tempShape.points.concat([pos.x, pos.y]);
+      }
+      socket.emit("sendData", room, JSON.stringify(tempShape));
+      return;
+    } catch (err) {
+      console.log(err);
       return;
     }
-	//get pointer position
-    const stage = e.target.getStage();
-    const pos = stage.getPointerPosition();
-
-	//get shape and modify properties of shape based on mousedrag
-    let index = shapes.findIndex((element) => element.id === tempId);
-	//console.log(shapes);
-	let tempShape = shapes[index];
-    if (tool === "pen") {
-      tempShape.points = tempShape.points.concat([pos.x, pos.y]);
-    }
-    if (tool === "rectangle") {
-      tempShape.width = pos.x - tempShape.x;
-      tempShape.height = pos.y - tempShape.y;
-    }
-    if (tool === "circle") {
-      let x = pos.x - tempShape.x;
-      let y = pos.y - tempShape.y;
-      let rad = Math.sqrt(x * x + y * y);
-      tempShape.radius = rad;
-    }
-    if (tool === "custom shape") {
-      tempShape.points = tempShape.points.concat([pos.x, pos.y]);
-    }
-    socket.emit("sendData", JSON.stringify(tempShape));
-}catch(TypeError){
-		console.log("oops! your tool broke!");
-		return;
-	}
   };
 
   const handleMouseUp = () => {
@@ -245,27 +254,39 @@ const Canvas = ({ shapes, setShapes, username }) => {
   ];
 
   const UserDropdown = () => {
-    if (showUsers)
-      return players.map(p => <p>{p.nickname}</p>)
-  }
-  
+    if (showUsers) return players.map((p) => <p>{p.nickname}</p>);
+  };
 
-  function undo(){
-    var toBeUndone = shapes.length - 1;
-    redoStack.push(shapes.splice(toBeUndone, 1));
-    setShapes([...shapes]);
+  function undo() {
+    if (undoStack.length === 0) {
+      return;
+    }
+    let toBeUndone = undoStack[undoStack.length - 1];
+    updateUndoStack(undoStack.filter((item) => item !== toBeUndone));
+    let popped = shapes.filter((element) => element.id === toBeUndone);
+    console.log(popped);
+    updateRedoStack((redoStack) => [...redoStack, popped]);
+    socket.emit("removeShape", room, toBeUndone);
     return;
   }
 
-  function redo(){
-    /*var toBeRedone = redoStack.pop();
-    shapes.splice(shapes.length - 1, 0, toBeRedone);
-    setShapes([...shapes]);*/
+  function redo() {
+    if (redoStack.length === 0) {
+      return;
+    }
+    let toBeRedone = redoStack[redoStack.length - 1];
+    console.log(toBeRedone);
+    updateRedoStack(redoStack.filter((item) => item !== toBeRedone));
+    let id = toBeRedone.id;
+    updateUndoStack((undoStack) => [...undoStack, id]);
+    socket.emit("sendData", room, JSON.stringify(toBeRedone));
     return;
   }
+
+  //
 
   return (
-    <div className="Container" style={{maxWidth:width}}>
+    <div className="Container" style={{ maxWidth: width }}>
       <div className="userList">
         <h3 onClick={() => setShowUsers((prevState) => !prevState)}>Users [v]</h3>
         <UserDropdown />
@@ -317,20 +338,22 @@ const Canvas = ({ shapes, setShapes, username }) => {
                   }}
                 ></input>
               </div>
+              {/* <div> */}
+              <button onClick={undo}>Undo</button>
+              <button onClick={redo}>Redo</button>
+              {/* </div> */}
             </div>
           </div>
         </section>
-        <button onClick={undo}>Undo</button>
-        <button onClick={redo}>Redo</button>
       </div>
 
-      <div className='RightContainer' style={{height: height-120}}>
+      <div className="RightContainer" style={{ height: height - 120 }}>
         <div className="NotificationContainer">
           <NotificationContainer />
         </div>
 
         <>
-            <FrameView numFrames={3} frame={uri} width={width} height={height}/>
+          <FrameView numFrames={3} frame={uri} width={width} height={height} />
         </>
       </div>
     </div>
@@ -338,3 +361,51 @@ const Canvas = ({ shapes, setShapes, username }) => {
 };
 
 export default Canvas;
+
+// const shape_preset_map = new Map([
+//     [
+//       "pen",
+//       {
+//         type: "line",
+//         id: tempId,
+//         points: [pos.x, pos.y, pos.x, pos.y],
+//         stroke: strokeColor,
+//         strokeWidth: strokeWidth,
+//         tension: 0.5,
+//         lineCap: "round",
+//         draggable: false,
+//         user: "test",
+//       },
+//     ],
+//     [
+//       "rectangle",
+//       {
+//         type: "rectangle",
+//         id: tempId,
+//         x: pos.x,
+//         y: pos.y,
+//         stroke: strokeColor,
+//         strokeWidth: strokeWidth,
+//         fill: fillColor,
+//         width: 5,
+//         height: 5,
+//         draggable: false,
+//         listening: false,
+//         user: "test",
+//       },
+//     ],
+//     [
+//       "circle",
+//       {
+//         type: "circle",
+//         id: tempId,
+//         x: pos.x,
+//         y: pos.y,
+//         fill: fillColor,
+//         stroke: strokeColor,
+//         strokeWidth: strokeWidth,
+//         radius: 4,
+//         draggable: false,
+//         listening: false,
+//         user: "test",
+//       },

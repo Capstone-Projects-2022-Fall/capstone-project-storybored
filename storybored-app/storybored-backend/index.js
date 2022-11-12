@@ -5,10 +5,11 @@ var jwt = require("jsonwebtoken");
 var uuid = require("uuid");
 var dotenv = require("dotenv").config();
 var cors = require("cors");
+const { map } = require("bluebird");
 //
 
 const PORT = 7007;
-
+// const shape_map = new Map();
 
 /**
  * Creates endpoints for HTTP response and requests.
@@ -18,43 +19,60 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.locals.index = 1000000000;
-const connected_clients = []; //const refernce, mutable array
+// const connected_clients = []; //const refernce, mutable array
+// set up ping interval and ping timeout here
 const server = http.createServer(app);
-const io = require("socket.io")(server,
-  {
-    cors: {
-      origin: "*",
-    }
-  });
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
+const rooms = new Map();
 
 const addUser = (id, nickname, room) => {
-
-  for (c in connected_clients) {
-    if (c.id === id || c.room === room) { return; }
+  if (!rooms.has(room)) {
+    rooms.set(room, {
+      id: room,
+      users: [],
+      URI: ["", "", ""],
+      shapes: [new Map(), new Map(), new Map()],
+    });
   }
-  if (!nickname) return { error: "Username is required" }
-  if (!room) return { error: "Room is required" }
+  for (c in rooms.get(room).users) {
+    if (c.id === id && c.room === room) {
+      return;
+    }
+  }
+  if (!nickname) return { error: "Username is required" };
+  if (!room) return { error: "Room is required" };
   const user = { id, nickname, room };
-  connected_clients.push(user);
+  rooms.get(room).users.push(user);
   return { user };
 };
 
-const getUser = (id) => {
-  let user = connected_clients.find((user) => user.id == id);
+const getUser = (room, id) => {
+  let user = rooms.get(room).users.find((user) => user.id == id);
   return user;
 };
 
-const getUsers = () => {
-  return connected_clients;
+const getUsers = (room) => {
+  return rooms.get(room).users;
 };
 
 const removeUser = (id) => {
-  const index = connected_clients.findIndex((user) => user.id == id);
-  if (index !== -1) {
-    return connected_clients.splice(index, 1)[0];
+  //change to get passed a user object
+  for (let room of rooms.values()) {
+    const index = room.users.findIndex((user) => user.id === id);
+    if (index !== -1) {
+      return room.users.splice(index, 1)[0];
+    }
   }
+  // const index = rooms.get(user.room).users.findIndex((user) => user.id == id);
+  // if (index !== -1) {
+  //   return rooms.get(user.id).users.splice(index, 1)[0];
+  // }
 };
-
 
 //creating event handlers for socket message received events
 io.on("connection", (socket) => {
@@ -65,24 +83,44 @@ io.on("connection", (socket) => {
     }
     socket.join(room);
     console.log(`${user.nickname} joined`);
-    socket.broadcast.emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
-    io.emit("users", getUsers());
+    io.to(user.room).emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
+    io.to(user.room).emit("users", getUsers(user.room));
+    // updateClient(socket.id, socket);
     callback();
   });
 
-  socket.on("sendData", (data) => {
-    const user = getUser(socket.id);
+  socket.on("sendData", (room, data) => {
+    const user = getUser(room, socket.id);
+    let shape = JSON.parse(data);
+    rooms.get(user.room).shapes[0].set(shape.id, shape);
+    let response = JSON.stringify(rooms.get(user.room).shapes[0].get(shape.id));
     if (!user) return;
-    io.to(user.room).emit("message", { user: user.nickname, text: data });
+    io.to(user.room).emit("message", { user: user.nickname, text: response });
   });
 
+  socket.on("updateCanvas", (room, data) => {
+    const user = getUser(room, socket.id);
+    const msg = JSON.stringify(Object.fromEntries(rooms.get(user.room).shapes[data]));
+    io.to(user.id).emit("update", { message: msg });
+  });
+
+  socket.on("removeShape", (room, data) => {
+    // console.log(data);
+    // console.log(room_data.shapes);
+    const user = getUser(room, socket.id);
+    rooms.get(user.room).shapes[0].delete(data);
+    io.to(user.room).emit("deleteshape", data);
+  });
 
   socket.on("disconnect", () => {
     const user = removeUser(socket.id);
     if (user) {
-      console.log("user disconnected from server");
-      io.emit("notification", { title: "Someone left", description: `${user.nickname} left` });
-      io.emit("users", getUsers());
+      console.log(`${user.nickname} left the server`);
+      io.to(user.room).emit("notification", { title: "Someone left", description: `${user.nickname} left` });
+      io.to(user.room).emit("users", getUsers(user.room));
+      if (rooms.get(user.room).users.length == 0) {
+        rooms.delete(user.room);
+      }
     }
   });
 });
