@@ -266,7 +266,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     let popped = shapes.filter((element) => element.id === toBeUndone);
     console.log(popped);
     updateRedoStack((redoStack) => [...redoStack, popped]);
-    socket.emit("removeShape", toBeUndone);
+    socket.emit("removeShape", room, toBeUndone);
     return;
   }
 
