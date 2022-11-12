@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
+import { BiShapePolygon } from "react-icons/bi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
 import FrameView from "../FrameView";
@@ -160,15 +161,26 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         };
         updateUndoStack((undoStack) => [...undoStack, tempId]);
       }
+      if (tool === "custom shape") {
+        lastShape = {
+          type: "line",
+          id: tempId,
+          points: [pos.x, pos.y, pos.x, pos.y],
+          stroke: strokeColor,
+          strokeWidth: strokeWidth,
+          fill: fillColor,
+          closed: true,
+          tension: 0.5,
+          lineCap: "round",
+          draggable: false,
+          user: "test",
+        };
+        updateUndoStack((undoStack) => [...undoStack, tempId]);
+      }
       if (tool === "eraser") {
         return;
       }
-      socket.emit("sendData", room, JSON.stringify(lastShape));
-      return;
-    } catch (err) {
-      console.log(err);
-      return;
-    }
+    } catch (err) { }
   };
 
   const handleMouseMove = (e) => {
@@ -198,12 +210,16 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         let rad = Math.sqrt(x * x + y * y);
         tempShape.radius = rad;
       }
+      if (tool === "custom shape") {
+        tempShape.points = tempShape.points.concat([pos.x, pos.y]);
+      }
       socket.emit("sendData", room, JSON.stringify(tempShape));
       return;
     } catch (err) {
       console.log(err);
       return;
     }
+
   };
 
   const handleMouseUp = () => {
@@ -221,6 +237,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const setPen = () => setTool("pen");
   const setRect = () => setTool("rectangle");
   const setCircle = () => setTool("circle");
+  const setCustom = () => setTool("custom shape");
   const toggleColorSelectors = () => {
     setShowColorSelectors((prevState) => !prevState);
   };
@@ -230,6 +247,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     { func: setPen, icon: <GiPencil /> },
     { func: setRect, icon: <GiSquare /> },
     { func: setCircle, icon: <GiCircle /> },
+    { func: setCustom, icon: <BiShapePolygon /> },
     { func: toggleColorSelectors, icon: <GiLargePaintBrush /> },
   ];
 
@@ -389,5 +407,4 @@ export default Canvas;
 //         listening: false,
 //         user: "test",
 //       },
-//     ],
-//   ]);
+
