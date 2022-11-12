@@ -83,7 +83,7 @@ io.on("connection", (socket) => {
     }
     socket.join(room);
     console.log(`${user.nickname} joined`);
-    socket.broadcast.emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
+    io.to(user.room).emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
     io.to(user.room).emit("users", getUsers(user.room));
     // updateClient(socket.id, socket);
     callback();
