@@ -29,13 +29,7 @@ const io = require("socket.io")(server, {
 });
 
 const rooms = new Map();
-// let room_data = {
-//   id: "test",
-//   users: [],
-//   URI: "",
-//   shapes: new Map(),
-// };
-//need to route to room and then to user to update local data
+
 const addUser = (id, nickname, room) => {
   if (!rooms.has(room)) {
     rooms.set(room, {
@@ -66,9 +60,10 @@ const getUsers = (room) => {
   return rooms.get(room).users;
 };
 
-const removeUser = (id) => { //change to get passed a user object
+const removeUser = (id) => {
+  //change to get passed a user object
   for (let room of rooms.values()) {
-    const index = room.users.findIndex((user) => user.id === id)
+    const index = room.users.findIndex((user) => user.id === id);
     if (index !== -1) {
       return room.users.splice(index, 1)[0];
     }
