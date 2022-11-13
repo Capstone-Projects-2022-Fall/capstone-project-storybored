@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
-import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
+import { GiPencil, GiSquare, GiCircle, GiPaintBucket, GiPointing } from "react-icons/gi";
 import { BiShapePolygon } from "react-icons/bi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
@@ -152,7 +152,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
           fill: fillColor,
           width: 5,
           height: 5,
-          draggable: false,
+          draggable: true,
           listening: false,
           user: "test",
         };
@@ -252,6 +252,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const toggleColorSelectors = () => {
     setShowColorSelectors((prevState) => !prevState);
   };
+  const setSelect = () => setTool("select");
 
   //Array containing objects for the toolbar; each object has an onClick function and an icon
   const toolbar_params = [
@@ -259,7 +260,8 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     { func: setRect, icon: <GiSquare /> },
     { func: setCircle, icon: <GiCircle /> },
     { func: setCustom, icon: <BiShapePolygon /> },
-    { func: toggleColorSelectors, icon: <GiLargePaintBrush /> },
+    { func: toggleColorSelectors, icon: <GiPaintBucket /> },
+    { func: setSelect, icon: <GiPointing /> },
   ];
 
   const UserDropdown = () => {
@@ -291,12 +293,6 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     socket.emit("sendData", room, focusedCanvas, JSON.stringify(toBeRedone));
     return;
   }
-
-  function handleFocusChange(e) {
-    console.log(e);
-  }
-
-  //
 
   return (
     <div className="Container" style={{ maxWidth: width }}>

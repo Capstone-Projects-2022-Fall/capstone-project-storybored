@@ -87,6 +87,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendData", (room, focus, data) => {
+    if (!rooms.has(room)) {
+      return;
+    }
     const user = getUser(room, socket.id);
     let shape = JSON.parse(data);
     rooms.get(user.room).shapes[focus].set(shape.id, shape);
@@ -96,15 +99,18 @@ io.on("connection", (socket) => {
   });
 
   socket.on("updateCanvas", (room, data) => {
+    if (!rooms.has(room)) {
+      return;
+    }
     const user = getUser(room, socket.id);
-    // console.log(rooms.get(user.room).shapes);
     const msg = JSON.stringify(Object.fromEntries(rooms.get(user.room).shapes[data]));
     io.to(user.id).emit("update", { message: msg });
   });
 
   socket.on("removeShape", (room, data) => {
-    // console.log(data);
-    // console.log(room_data.shapes);
+    if (!rooms.has(room)) {
+      return;
+    }
     const user = getUser(room, socket.id);
     rooms.get(user.room).shapes[0].delete(data);
     io.to(user.room).emit("deleteshape", data);
