@@ -10,8 +10,8 @@ import io from "socket.io-client";
 import { Stage, Layer } from "react-konva";
 import { NotificationContainer, NotificationManager } from "react-notifications";
 
-const width = window.innerWidth;
-const height = window.innerHeight;
+const width = 1200;
+const height = 800;
 const ENDPOINT = "139.144.172.98:7007";
 // const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
