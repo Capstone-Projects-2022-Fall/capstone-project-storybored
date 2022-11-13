@@ -97,7 +97,7 @@ io.on("connection", (socket) => {
 
   socket.on("updateCanvas", (room, data) => {
     const user = getUser(room, socket.id);
-    console.log(rooms.get(user.room).shapes);
+    // console.log(rooms.get(user.room).shapes);
     const msg = JSON.stringify(Object.fromEntries(rooms.get(user.room).shapes[data]));
     io.to(user.id).emit("update", { message: msg });
   });
