@@ -53,11 +53,17 @@ const addUser = (id, nickname, room) => {
 };
 
 const getUser = (room, id) => {
+  if (!rooms.has(room)) {
+    return;
+  }
   let user = rooms.get(room).users.find((user) => user.id == id);
   return user;
 };
 
 const getUsers = (room) => {
+  if (!rooms.has(room)) {
+    return;
+  }
   return rooms.get(room).users;
 };
 
