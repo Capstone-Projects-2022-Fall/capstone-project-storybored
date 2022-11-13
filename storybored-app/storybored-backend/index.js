@@ -116,6 +116,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("updateFrames", (room, canvas, data) => {
+    if (!rooms.has(room)) {
+      return;
+    }
     rooms.get(room).URIs[canvas] = data;
   });
 
