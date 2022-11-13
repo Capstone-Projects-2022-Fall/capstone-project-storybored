@@ -86,17 +86,18 @@ io.on("connection", (socket) => {
     callback();
   });
 
-  socket.on("sendData", (room, data) => {
+  socket.on("sendData", (room, focus, data) => {
     const user = getUser(room, socket.id);
     let shape = JSON.parse(data);
-    rooms.get(user.room).shapes[0].set(shape.id, shape);
-    let response = JSON.stringify(rooms.get(user.room).shapes[0].get(shape.id));
+    rooms.get(user.room).shapes[focus].set(shape.id, shape);
+    let response = JSON.stringify(rooms.get(user.room).shapes[focus].get(shape.id));
     if (!user) return;
     io.to(user.room).emit("message", { user: user.nickname, text: response });
   });
 
   socket.on("updateCanvas", (room, data) => {
     const user = getUser(room, socket.id);
+    console.log(rooms.get(user.room).shapes);
     const msg = JSON.stringify(Object.fromEntries(rooms.get(user.room).shapes[data]));
     io.to(user.id).emit("update", { message: msg });
   });

@@ -8,6 +8,8 @@ const FrameView = ({ numFrames, frame, width, height }) => {
   let j = 0;
   let ind = 0;
 
+  //   function setFocusedCanvas(event)
+
   return (
     <div className="FrameViewContainer" style={{ width: (width - 360) / 5 }}>
       {items.map((i) => (

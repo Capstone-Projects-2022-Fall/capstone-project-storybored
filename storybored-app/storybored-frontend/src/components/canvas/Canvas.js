@@ -12,8 +12,8 @@ import { NotificationContainer, NotificationManager } from "react-notifications"
 
 const width = window.innerWidth;
 const height = window.innerHeight;
-// const ENDPOINT = "139.144.172.98:7007";
-const ENDPOINT = "http://localhost:7007";
+const ENDPOINT = "139.144.172.98:7007";
+// const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
 const Canvas = ({ shapes, setShapes, username, roomName }) => {
@@ -51,10 +51,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
 
   useEffect(() => {
     socket.emit("updateCanvas", room, focusedCanvas);
-    socket.emit("updateFrames", room, 0, stageRef.current.toDataURL());
-    socket.emit("updateFrames", room, 1, stageRef.current.toDataURL());
-    socket.emit("updateFrames", room, 2, stageRef.current.toDataURL());
-  }, []);
+  }, [focusedCanvas]);
 
   useEffect(() => {
     socket.on("users", (users) => {
@@ -83,7 +80,9 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     socket.on("update", (data) => {
       let shape_update = new Map(Object.entries(JSON.parse(data.message)));
       let fresh_shapes = Array.from(shape_update.values());
-      setShapes([...shapes, ...fresh_shapes]);
+      console.log(fresh_shapes);
+      setShapes((shapes) => [...fresh_shapes]);
+      console.log(shapes);
     });
 
     socket.on("notification", (notif) => {
@@ -189,7 +188,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         };
         updateUndoStack((undoStack) => [...undoStack, tempId]);
       }
-      socket.emit("sendData", room, JSON.stringify(lastShape));
+      socket.emit("sendData", room, focusedCanvas, JSON.stringify(lastShape));
       return;
     } catch (err) {}
   };
@@ -224,7 +223,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       if (tool === "custom shape") {
         tempShape.points = tempShape.points.concat([pos.x, pos.y]);
       }
-      socket.emit("sendData", room, JSON.stringify(tempShape));
+      socket.emit("sendData", room, focusedCanvas, JSON.stringify(tempShape));
       return;
     } catch (err) {
       console.log(err);
@@ -287,8 +286,12 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     updateRedoStack(redoStack.filter((item) => item !== toBeRedone));
     let id = toBeRedone.id;
     updateUndoStack((undoStack) => [...undoStack, id]);
-    socket.emit("sendData", room, JSON.stringify(toBeRedone));
+    socket.emit("sendData", room, focusedCanvas, JSON.stringify(toBeRedone));
     return;
+  }
+
+  function handleFocusChange(e) {
+    console.log(e);
   }
 
   //
@@ -331,27 +334,49 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
           </Layer>
         </Stage>
         <section className="options">
-          <div className="tools">
-            <div style={{ fontSize: "2em" }}>Tool: {tool}</div>
+          {/* <div className="tools"> */}
+          <div className="tools" style={{ fontSize: "2em" }}>
+            Tool: {tool}
+          </div>
 
+          {/* <div> */}
+          <div className="tools">
+            <div>Stroke width</div>
             <div>
-              <div>Stroke width</div>
-              <div>
-                <input
-                  type="number"
-                  value={strokeWidth}
-                  id="strokebox"
-                  onChange={(e) => {
-                    setStrokeWidth(parseInt(e.target.value));
-                  }}
-                ></input>
-              </div>
-              {/* <div> */}
-              <button onClick={undo}>Undo</button>
-              <button onClick={redo}>Redo</button>
-              {/* </div> */}
+              <input
+                type="number"
+                value={strokeWidth}
+                id="strokebox"
+                onChange={(e) => {
+                  setStrokeWidth(parseInt(e.target.value));
+                  console.log(focusedCanvas);
+                }}
+              ></input>
             </div>
           </div>
+          <div className="tools">
+            <button onClick={undo}>Undo</button>
+            <button onClick={redo}>Redo</button>
+          </div>
+          <div className="tools">
+            <label htmlFor="framepicker">Select Frame:</label>
+            <select
+              name="framepicker"
+              id="framepicker"
+              value={focusedCanvas}
+              onChange={(e) => {
+                setFocusedCanvas(parseInt(e.target.value));
+                console.log(focusedCanvas);
+                socket.emit("updateCanvas", room, focusedCanvas);
+              }}
+            >
+              <option value="0">Frame 1</option>
+              <option value="1">Frame 2</option>
+              <option value="2">Frame 3</option>
+            </select>
+          </div>
+          {/* </div> */}
+          {/* </div> */}
         </section>
       </div>
 
