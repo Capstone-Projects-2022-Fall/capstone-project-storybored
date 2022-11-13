@@ -1,48 +1,28 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-// import { SocketContext } from "../socketContext";
-// import { RoomContext } from "../roomContext";
-// import { UsersContext } from "../usersContext";
 
 const CreateRoom = () => {
-
-  //   let canvasSizeValue = 0;
   const navigate = useNavigate();
-  // const socket = useContext(SocketContext);
-  //   const { setUsers } = useContext(UsersContext);
-//   const { room } = useContext(RoomContext);
-
+  //   const [inputValue, setInputValue] = useState("");
   const navToCanvas = () => {
-    // let date = new Date();
-    // let nickname = date.getTime().toString(36);
-    // let room = 4;
-    // socket.emit("join", { nickname, room }, (error) => {
-    //   if (error) {
-    //     console.log(error);
-    //     return;
-    //   } else {
-    //     console.log("joined server");
-    //   }
-    // });
     navigate("/Canvas");
   };
 
+  const submit = () => {
+    navToCanvas();
+  };
   return (
     <div className="CreateRoom">
-      <h1>Create Room</h1>
-      {/* <div id='options'>
-            <form>
-                <label for='private-input' id='private-label'>Make Private</label> 
-                <input type='checkbox' id='private-input'></input>
-            </form>
-                {/*Here if Make Private is checked, a password <p></p> will need to be injected dynamically*/}
+      <h1>Join Room</h1>
 
       {/* <form>
-                <label for='canvas-size-input' id='canvas-size-label'>Canvas Size</label>
-                <input type='text' id='canvas-size-input' onChange={e => canvasSizeValue = e.target.value}></input>
-            </form>
-        </div> */}
-      <button id="start-button" onClick={navToCanvas}>
+        <label for="room-name-input" id="room-name-label">
+          Room Name
+        </label>
+        <input type="text" id="room-name-input" onChange={(e) => (inputValue = setInputValue(e.target.value))}></input>
+      </form> */}
+
+      <button id="start-button" onClick={submit}>
         Start!
       </button>
     </div>

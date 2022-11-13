@@ -10,6 +10,8 @@ const Line = (props) => {
       points={properties.points}
       stroke={properties.stroke}
       strokeWidth={properties.strokeWidth}
+      fill = {properties.fill}
+      closed = {properties.closed}
       tension={properties.tension}
       lineCap={properties.lineCap}
       lineJoin={properties.lineJoin}
