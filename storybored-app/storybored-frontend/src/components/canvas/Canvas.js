@@ -61,7 +61,9 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
 
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
-      if (show.id === null) {
+      let frame = JSON.parse(msg.frame);
+      console.log(frame);
+      if (show.id === null || frame !== focusedCanvas) {
         return;
       }
       let index = shapes.findLastIndex((element) => element.id === show.id);
@@ -80,9 +82,9 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     socket.on("update", (data) => {
       let shape_update = new Map(Object.entries(JSON.parse(data.message)));
       let fresh_shapes = Array.from(shape_update.values());
-      console.log(fresh_shapes);
+      //   console.log(fresh_shapes);
       setShapes((shapes) => [...fresh_shapes]);
-      console.log(shapes);
+      //   console.log(shapes);
     });
 
     socket.on("notification", (notif) => {

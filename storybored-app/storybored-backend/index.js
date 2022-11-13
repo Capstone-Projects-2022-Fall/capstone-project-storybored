@@ -92,7 +92,7 @@ io.on("connection", (socket) => {
     rooms.get(user.room).shapes[focus].set(shape.id, shape);
     let response = JSON.stringify(rooms.get(user.room).shapes[focus].get(shape.id));
     if (!user) return;
-    io.to(user.room).emit("message", { user: user.nickname, text: response });
+    io.to(user.room).emit("message", { user: user.nickname, text: response, frame: focus });
   });
 
   socket.on("updateCanvas", (room, data) => {
