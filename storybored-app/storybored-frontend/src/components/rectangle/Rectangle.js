@@ -3,6 +3,14 @@ import { Rect } from "react-konva";
 
 const Rectangle = (props) => {
   const { properties } = props;
+
+  //   const handleClick = (e) => {
+  //     console.log(e.target.attrs.user);
+  //     if (e.target.attrs.user !== "select") {
+  //       return;
+  //     }
+  //     console.log(e.target);
+  //   };
   return (
     <Rect
       key={properties.key}
@@ -16,6 +24,8 @@ const Rectangle = (props) => {
       fill={properties.fill}
       draggable={properties.draggable}
       listening={properties.listening}
+      //   onClick={handleClick}
+      user={properties.user}
       //   globalCompositeOperation={properties.globalCompositeOperation}
       //   globalCompositeOperation={tool === "eraser" ? "destination-out" : "source-over"}
       //   onMouseOver={handleMouseOver()}

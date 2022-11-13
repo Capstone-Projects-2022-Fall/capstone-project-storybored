@@ -85,7 +85,7 @@ io.on("connection", (socket) => {
       return callback(error);
     }
     socket.join(room);
-    console.log(`${user.nickname} joined`);
+    console.log(`${user.nickname} joined ${user.room}`);
     io.to(user.room).emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
     io.to(user.room).emit("users", getUsers(user.room));
     // updateClient(socket.id, socket);

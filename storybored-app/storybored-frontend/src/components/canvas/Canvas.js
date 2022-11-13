@@ -26,6 +26,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const [undoStack, updateUndoStack] = useState([]);
   const [redoStack, updateRedoStack] = useState([]);
   const isDrawing = useRef(false);
+  const isModding = useRef(false);
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
   const [focusedCanvas, setFocusedCanvas] = useState(0);
@@ -33,10 +34,12 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const [uri, setUri] = useState([]);
   const [updateUri, setUpdateUri] = useState(true);
   let lastShape;
+  let modShape;
   const stageRef = React.useRef(null);
-
   const nickname = username;
   const room = roomName;
+  const drawing_tools = ["pen", "rectangle", "circle", "custom shape"];
+
   useEffect(() => {
     socket.emit("join", { nickname, room }, (error) => {
       if (error) {
@@ -121,122 +124,90 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     }
   });
 
+  /**MOUSEDOWN EVENT HANDLER FUNCTION
+   *
+   */
   const handleMouseDown = (e) => {
     // setTempId((tempId) => generateId());
-    isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
     try {
-      //put this in a map or something so we can actually maintain this
-      if (tool === "pen") {
-        lastShape = {
-          type: "line",
-          id: tempId,
-          points: [pos.x, pos.y, pos.x, pos.y],
-          stroke: strokeColor,
-          strokeWidth: strokeWidth,
-          tension: 0.5,
-          lineCap: "round",
-          draggable: false,
-          user: "test",
-        };
+      if (drawing_tools.includes(tool)) {
+        isDrawing.current = true;
+        lastShape = initializeShape(tool, pos);
         updateUndoStack((undoStack) => [...undoStack, tempId]);
+        socket.emit("sendData", room, focusedCanvas, JSON.stringify(lastShape));
+      } else if (tool === "select") {
+        if (e.target.attrs.className === "Canvas") {
+          return;
+        }
+        isModding.current = true;
+        let i = shapes.findIndex((element) => element.id === e.target.attrs.id);
+        modShape = shapes[i];
+        console.log(modShape);
       }
-      if (tool === "rectangle") {
-        lastShape = {
-          type: "rectangle",
-          id: tempId,
-          x: pos.x,
-          y: pos.y,
-          stroke: strokeColor,
-          strokeWidth: strokeWidth,
-          fill: fillColor,
-          width: 5,
-          height: 5,
-          draggable: true,
-          listening: true,
-          user: "test",
-        };
-        updateUndoStack((undoStack) => [...undoStack, tempId]);
-      }
-      if (tool === "circle") {
-        lastShape = {
-          type: "circle",
-          id: tempId,
-          x: pos.x,
-          y: pos.y,
-          fill: fillColor,
-          stroke: strokeColor,
-          strokeWidth: strokeWidth,
-          radius: 4,
-          draggable: false,
-          listening: false,
-          user: "test",
-        };
-        updateUndoStack((undoStack) => [...undoStack, tempId]);
-      }
-      if (tool === "custom shape") {
-        lastShape = {
-          type: "line",
-          id: tempId,
-          points: [pos.x, pos.y, pos.x, pos.y],
-          stroke: strokeColor,
-          strokeWidth: strokeWidth,
-          fill: fillColor,
-          closed: true,
-          tension: 0.5,
-          lineCap: "round",
-          draggable: false,
-          user: "test",
-        };
-        updateUndoStack((undoStack) => [...undoStack, tempId]);
-      }
-      socket.emit("sendData", room, focusedCanvas, JSON.stringify(lastShape));
       return;
     } catch (err) {}
   };
 
+  /**MOUSEMOVE EVENT HANDLER FUNCTION
+   *
+   * @param {*}
+   * @returns
+   */
   const handleMouseMove = (e) => {
     try {
       // no drawing - skipping
-      if (!isDrawing.current || tool === "eraser") {
+      if (!isDrawing.current && tool !== "select") {
         return;
       }
       //get pointer position
       const stage = e.target.getStage();
       const pos = stage.getPointerPosition();
-
-      //get shape and modify properties of shape based on mousedrag
-      let index = shapes.findIndex((element) => element.id === tempId);
-      //console.log(shapes);
-      let tempShape = shapes[index];
-      if (tool === "pen") {
-        tempShape.points = tempShape.points.concat([pos.x, pos.y]);
+      if (drawing_tools.includes(tool)) {
+        //get shape and modify properties of shape based on mousedrag
+        let index = shapes.findIndex((element) => element.id === tempId);
+        //console.log(shapes);
+        let tempShape = shapes[index];
+        if (tool === "pen") {
+          tempShape.points = tempShape.points.concat([pos.x, pos.y]);
+        }
+        if (tool === "rectangle") {
+          tempShape.width = pos.x - tempShape.x;
+          tempShape.height = pos.y - tempShape.y;
+        }
+        if (tool === "circle") {
+          let x = pos.x - tempShape.x;
+          let y = pos.y - tempShape.y;
+          let rad = Math.sqrt(x * x + y * y);
+          tempShape.radius = rad;
+        }
+        if (tool === "custom shape") {
+          tempShape.points = tempShape.points.concat([pos.x, pos.y]);
+        }
+        socket.emit("sendData", room, focusedCanvas, JSON.stringify(tempShape));
+        return;
       }
-      if (tool === "rectangle") {
-        tempShape.width = pos.x - tempShape.x;
-        tempShape.height = pos.y - tempShape.y;
+      if (isModding.current && tool === "select") {
+        let i = shapes.findIndex((element) => element.id === e.target.attrs.id);
+        modShape = shapes[i];
+        modShape.x = pos.x;
+        modShape.y = pos.y;
+        socket.emit("sendData", room, focusedCanvas, JSON.stringify(modShape));
       }
-      if (tool === "circle") {
-        let x = pos.x - tempShape.x;
-        let y = pos.y - tempShape.y;
-        let rad = Math.sqrt(x * x + y * y);
-        tempShape.radius = rad;
-      }
-      if (tool === "custom shape") {
-        tempShape.points = tempShape.points.concat([pos.x, pos.y]);
-      }
-      socket.emit("sendData", room, focusedCanvas, JSON.stringify(tempShape));
-      return;
     } catch (err) {
       console.log(err);
       return;
     }
   };
 
+  /***MOUSEUP EVENT HANDLER FUNCTION
+   *
+   */
   const handleMouseUp = () => {
     lastShape = null;
     setTempId((tempId) => generateId());
     isDrawing.current = false;
+    isModding.current = false;
   };
 
   function generateId() {
@@ -292,6 +263,71 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     updateUndoStack((undoStack) => [...undoStack, id]);
     socket.emit("sendData", room, focusedCanvas, JSON.stringify(toBeRedone));
     return;
+  }
+
+  function initializeShape(tool, pos) {
+    let newShape;
+    if (tool === "pen") {
+      newShape = {
+        type: "line",
+        id: tempId,
+        points: [pos.x, pos.y, pos.x, pos.y],
+        stroke: strokeColor,
+        strokeWidth: strokeWidth,
+        tension: 0.5,
+        lineCap: "round",
+        draggable: false,
+        user: "test",
+      };
+    }
+    if (tool === "rectangle") {
+      newShape = {
+        type: "rectangle",
+        id: tempId,
+        x: pos.x,
+        y: pos.y,
+        stroke: strokeColor,
+        strokeWidth: strokeWidth,
+        fill: fillColor,
+        width: 5,
+        height: 5,
+        draggable: false,
+        listening: true,
+        user: tool,
+      };
+    }
+    if (tool === "circle") {
+      newShape = {
+        type: "circle",
+        id: tempId,
+        x: pos.x,
+        y: pos.y,
+        fill: fillColor,
+        stroke: strokeColor,
+        strokeWidth: strokeWidth,
+        radius: 4,
+        draggable: false,
+        listening: true,
+        user: "test",
+      };
+    }
+    if (tool === "custom shape") {
+      newShape = {
+        type: "line",
+        id: tempId,
+        points: [pos.x, pos.y, pos.x, pos.y],
+        stroke: strokeColor,
+        strokeWidth: strokeWidth,
+        fill: fillColor,
+        closed: true,
+        tension: 0.5,
+        lineCap: "round",
+        draggable: false,
+        listening: true,
+        user: "test",
+      };
+    }
+    return newShape;
   }
 
   return (
