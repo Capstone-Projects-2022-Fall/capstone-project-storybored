@@ -111,6 +111,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("getFrames", (room) => {
+    if (!rooms.has(room)) {
+      return;
+    }
     let response = rooms.get(room).URIs;
     io.to(room).emit("setFrames", response);
   });
