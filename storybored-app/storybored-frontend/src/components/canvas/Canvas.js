@@ -15,7 +15,7 @@ const height = window.innerHeight;
 const ENDPOINT = "139.144.172.98:7007";
 // const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
-
+//test
 const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const [tool, setTool] = useState("pen");
   const [strokeColor, setStrokeColor] = useState("#000"); //black
