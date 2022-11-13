@@ -62,7 +62,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
       let frame = JSON.parse(msg.frame);
-      console.log(frame);
+      //   console.log(frame);
       if (show.id === null || frame !== focusedCanvas) {
         return;
       }
@@ -351,7 +351,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
                 id="strokebox"
                 onChange={(e) => {
                   setStrokeWidth(parseInt(e.target.value));
-                  console.log(focusedCanvas);
+                  //   console.log(focusedCanvas);
                 }}
               ></input>
             </div>
@@ -368,7 +368,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
               value={focusedCanvas}
               onChange={(e) => {
                 setFocusedCanvas(parseInt(e.target.value));
-                console.log(focusedCanvas);
+                // console.log(focusedCanvas);
                 socket.emit("updateCanvas", room, focusedCanvas);
               }}
             >
