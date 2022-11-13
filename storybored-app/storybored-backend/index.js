@@ -98,6 +98,9 @@ io.on("connection", (socket) => {
       return;
     }
     let shape = JSON.parse(data);
+    if (shape.id === null) {
+      return;
+    }
     rooms.get(user.room).shapes[focus].set(shape.id, shape);
     let response = JSON.stringify(rooms.get(user.room).shapes[focus].get(shape.id));
     if (!user) return;

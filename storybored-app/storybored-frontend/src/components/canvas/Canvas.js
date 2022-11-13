@@ -10,7 +10,7 @@ import io from "socket.io-client";
 import { Stage, Layer } from "react-konva";
 import { NotificationContainer, NotificationManager } from "react-notifications";
 
-const width = 1200;
+const width = 1600;
 const height = 800;
 const ENDPOINT = "139.144.172.98:7007";
 // const ENDPOINT = "http://localhost:7007";
@@ -153,7 +153,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
           width: 5,
           height: 5,
           draggable: true,
-          listening: false,
+          listening: true,
           user: "test",
         };
         updateUndoStack((undoStack) => [...undoStack, tempId]);
