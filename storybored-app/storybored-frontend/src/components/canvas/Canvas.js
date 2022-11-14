@@ -30,7 +30,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const [showUsers, setShowUsers] = useState(false);
   const [focusedCanvas, setFocusedCanvas] = useState(0);
   //usestate to keep track of index of focused canvas
-  const [uri, setUri] = useState("");
+  const [uri, setUri] = useState([]);
   const [updateUri, setUpdateUri] = useState(true);
   let lastShape;
   const stageRef = React.useRef(null);
@@ -51,16 +51,19 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
 
   useEffect(() => {
     socket.emit("updateCanvas", room, focusedCanvas);
-  }, []);
+  }, [focusedCanvas]);
 
   useEffect(() => {
     socket.on("users", (users) => {
       setPlayers(users);
       console.log(users);
     });
+
     socket.on("message", (msg) => {
       let show = JSON.parse(msg.text);
-      if (show.id === null) {
+      let frame = JSON.parse(msg.frame);
+      //   console.log(frame);
+      if (show.id === null || frame !== focusedCanvas) {
         return;
       }
       let index = shapes.findLastIndex((element) => element.id === show.id);
@@ -79,19 +82,27 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     socket.on("update", (data) => {
       let shape_update = new Map(Object.entries(JSON.parse(data.message)));
       let fresh_shapes = Array.from(shape_update.values());
-      setShapes([...shapes, ...fresh_shapes]);
+      //   console.log(fresh_shapes);
+      setShapes((shapes) => [...fresh_shapes]);
+      //   console.log(shapes);
     });
 
     socket.on("notification", (notif) => {
       console.log(notif.description);
       NotificationManager.info(notif.description, "", 6000);
     });
+
+    socket.on("setFrames", (data) => {
+      setUri(data);
+    });
+
     return () => {
       socket.off("notification");
       socket.off("message");
       socket.off("users");
-      socket.off("deletshape");
+      socket.off("deleteshape");
       socket.off("update");
+      socket.off("setFrames");
     };
   }, [socket, shapes, setShapes]);
 
@@ -100,7 +111,9 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   useEffect(() => {
     if (updateUri) {
       setUpdateUri(false);
-      setUri(stageRef.current.toDataURL());
+      socket.emit("updateFrames", room, focusedCanvas, stageRef.current.toDataURL());
+      socket.emit("getFrames", room);
+      //   setUri(stageRef.current.toDataURL());
       setTimeout(() => {
         setUpdateUri(true);
       }, 3000);
@@ -177,11 +190,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         };
         updateUndoStack((undoStack) => [...undoStack, tempId]);
       }
-
-      if (tool === "eraser") {
-        return;
-      }
-      socket.emit("sendData", room, JSON.stringify(lastShape));
+      socket.emit("sendData", room, focusedCanvas, JSON.stringify(lastShape));
       return;
     } catch (err) {}
   };
@@ -216,7 +225,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       if (tool === "custom shape") {
         tempShape.points = tempShape.points.concat([pos.x, pos.y]);
       }
-      socket.emit("sendData", room, JSON.stringify(tempShape));
+      socket.emit("sendData", room, focusedCanvas, JSON.stringify(tempShape));
       return;
     } catch (err) {
       console.log(err);
@@ -279,8 +288,12 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     updateRedoStack(redoStack.filter((item) => item !== toBeRedone));
     let id = toBeRedone.id;
     updateUndoStack((undoStack) => [...undoStack, id]);
-    socket.emit("sendData", room, JSON.stringify(toBeRedone));
+    socket.emit("sendData", room, focusedCanvas, JSON.stringify(toBeRedone));
     return;
+  }
+
+  function handleFocusChange(e) {
+    console.log(e);
   }
 
   //
@@ -323,27 +336,49 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
           </Layer>
         </Stage>
         <section className="options">
-          <div className="tools">
-            <div style={{ fontSize: "2em" }}>Tool: {tool}</div>
+          {/* <div className="tools"> */}
+          <div className="tools" style={{ fontSize: "2em" }}>
+            Tool: {tool}
+          </div>
 
+          {/* <div> */}
+          <div className="tools">
+            <div>Stroke width</div>
             <div>
-              <div>Stroke width</div>
-              <div>
-                <input
-                  type="number"
-                  value={strokeWidth}
-                  id="strokebox"
-                  onChange={(e) => {
-                    setStrokeWidth(parseInt(e.target.value));
-                  }}
-                ></input>
-              </div>
-              {/* <div> */}
-              <button onClick={undo}>Undo</button>
-              <button onClick={redo}>Redo</button>
-              {/* </div> */}
+              <input
+                type="number"
+                value={strokeWidth}
+                id="strokebox"
+                onChange={(e) => {
+                  setStrokeWidth(parseInt(e.target.value));
+                  //   console.log(focusedCanvas);
+                }}
+              ></input>
             </div>
           </div>
+          <div className="tools">
+            <button onClick={undo}>Undo</button>
+            <button onClick={redo}>Redo</button>
+          </div>
+          <div className="tools">
+            <label htmlFor="framepicker">Select Frame:</label>
+            <select
+              name="framepicker"
+              id="framepicker"
+              value={focusedCanvas}
+              onChange={(e) => {
+                setFocusedCanvas(parseInt(e.target.value));
+                // console.log(focusedCanvas);
+                socket.emit("updateCanvas", room, focusedCanvas);
+              }}
+            >
+              <option value="0">Frame 1</option>
+              <option value="1">Frame 2</option>
+              <option value="2">Frame 3</option>
+            </select>
+          </div>
+          {/* </div> */}
+          {/* </div> */}
         </section>
       </div>
 
@@ -361,51 +396,3 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
 };
 
 export default Canvas;
-
-// const shape_preset_map = new Map([
-//     [
-//       "pen",
-//       {
-//         type: "line",
-//         id: tempId,
-//         points: [pos.x, pos.y, pos.x, pos.y],
-//         stroke: strokeColor,
-//         strokeWidth: strokeWidth,
-//         tension: 0.5,
-//         lineCap: "round",
-//         draggable: false,
-//         user: "test",
-//       },
-//     ],
-//     [
-//       "rectangle",
-//       {
-//         type: "rectangle",
-//         id: tempId,
-//         x: pos.x,
-//         y: pos.y,
-//         stroke: strokeColor,
-//         strokeWidth: strokeWidth,
-//         fill: fillColor,
-//         width: 5,
-//         height: 5,
-//         draggable: false,
-//         listening: false,
-//         user: "test",
-//       },
-//     ],
-//     [
-//       "circle",
-//       {
-//         type: "circle",
-//         id: tempId,
-//         x: pos.x,
-//         y: pos.y,
-//         fill: fillColor,
-//         stroke: strokeColor,
-//         strokeWidth: strokeWidth,
-//         radius: 4,
-//         draggable: false,
-//         listening: false,
-//         user: "test",
-//       },
