@@ -10,12 +10,16 @@ const Line = (props) => {
       points={properties.points}
       stroke={properties.stroke}
       strokeWidth={properties.strokeWidth}
-      fill = {properties.fill}
-      closed = {properties.closed}
+      fill={properties.fill}
+      closed={properties.closed}
       tension={properties.tension}
       lineCap={properties.lineCap}
       lineJoin={properties.lineJoin}
       draggable={properties.draggable}
+      offsetX={properties.offsetX}
+      offsetY={properties.offsetY}
+      listening={properties.listening}
+      rotation={properties.rotation}
       //   globalCompositeOperation={properties.globalCompositeOperation}
       //   globalCompositeOperation={tool === "eraser" ? "destination-out" : "source-over"}
     />

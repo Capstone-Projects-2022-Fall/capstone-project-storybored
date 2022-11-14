@@ -53,11 +53,17 @@ const addUser = (id, nickname, room) => {
 };
 
 const getUser = (room, id) => {
+  if (!rooms.has(room)) {
+    return;
+  }
   let user = rooms.get(room).users.find((user) => user.id == id);
   return user;
 };
 
 const getUsers = (room) => {
+  if (!rooms.has(room)) {
+    return;
+  }
   return rooms.get(room).users;
 };
 
@@ -79,7 +85,7 @@ io.on("connection", (socket) => {
       return callback(error);
     }
     socket.join(room);
-    console.log(`${user.nickname} joined`);
+    console.log(`${user.nickname} joined ${user.room}`);
     io.to(user.room).emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
     io.to(user.room).emit("users", getUsers(user.room));
     // updateClient(socket.id, socket);
@@ -88,7 +94,13 @@ io.on("connection", (socket) => {
 
   socket.on("sendData", (room, focus, data) => {
     const user = getUser(room, socket.id);
+    if (!rooms.has(user.room)) {
+      return;
+    }
     let shape = JSON.parse(data);
+    if (shape.id === null) {
+      return;
+    }
     rooms.get(user.room).shapes[focus].set(shape.id, shape);
     let response = JSON.stringify(rooms.get(user.room).shapes[focus].get(shape.id));
     if (!user) return;
@@ -97,16 +109,19 @@ io.on("connection", (socket) => {
 
   socket.on("updateCanvas", (room, data) => {
     const user = getUser(room, socket.id);
-    // console.log(rooms.get(user.room).shapes);
+    if (!rooms.has(room)) {
+      return;
+    }
     const msg = JSON.stringify(Object.fromEntries(rooms.get(user.room).shapes[data]));
     io.to(user.id).emit("update", { message: msg });
   });
 
-  socket.on("removeShape", (room, data) => {
-    // console.log(data);
-    // console.log(room_data.shapes);
+  socket.on("removeShape", (room, focus, data) => {
     const user = getUser(room, socket.id);
-    rooms.get(user.room).shapes[0].delete(data);
+    if (!rooms.has(user.room)) {
+      return;
+    }
+    rooms.get(user.room).shapes[focus].delete(data);
     io.to(user.room).emit("deleteshape", data);
   });
 
