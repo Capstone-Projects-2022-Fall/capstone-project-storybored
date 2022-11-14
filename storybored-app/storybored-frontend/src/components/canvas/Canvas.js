@@ -18,6 +18,7 @@ const ENDPOINT = "139.144.172.98:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
 const Canvas = ({ shapes, setShapes, username, roomName }) => {
+  //can we combine these drawing options into one object usestate?
   const [tool, setTool] = useState("pen");
   const [strokeColor, setStrokeColor] = useState("#000"); //black
   const [fillColor, setFillColor] = useState("#fff"); //white
@@ -30,6 +31,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const [players, setPlayers] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
   const [focusedCanvas, setFocusedCanvas] = useState(0);
+  const [captionText, setCaptionText] = useState("");
   //usestate to keep track of index of focused canvas
   const [uri, setUri] = useState([]);
   const [updateUri, setUpdateUri] = useState(true);
@@ -166,7 +168,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const handleMouseMove = (e) => {
     try {
       // no drawing - skipping
-      if ((!isDrawing.current && tool !== "select") || tool === "erase" || tool == "words") {
+      if ((!isDrawing.current && tool !== "select") || tool === "erase" || tool === "words") {
         return;
       }
       //get pointer position
@@ -197,6 +199,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         return;
       }
       if (isModding.current && tool === "select") {
+        //hellish, refactor
         let i = shapes.findIndex((element) => element.id === e.target.attrs.id);
         modShape = shapes[i];
         if (modShape.type === "circle") {
@@ -229,6 +232,15 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
             modShape.rotation = modShape + sum;
           }
         }
+        if (modShape.type === "words")
+          if (selectOption === "drag") {
+            modShape.x = pos.x - 15;
+            modShape.y = pos.y - 10;
+          }
+        // if (selectOption === "rotateR" || selectOption === "rotateL") {
+        //   let sum = selectOption === "rotateR" ? 1 : -1;
+        //   modShape.rotation = modShape + sum;
+        // }
         socket.emit("sendData", room, focusedCanvas, JSON.stringify(modShape));
       }
     } catch (err) {
@@ -375,9 +387,10 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       newShape = {
         type: "words",
         id: tempId,
+        fontSize: 20,
         x: pos.x,
         y: pos.y,
-        text: "hello there",
+        text: captionText,
         draggable: false,
         listening: true,
         rotation: 0,
@@ -418,7 +431,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
 
           {/* <div> */}
           <div className="tools" style={{ fontSize: "1.5em" }}>
-            <div>Stroke width</div>
+            <div>Stroke Width</div>
             <div>
               <input
                 type="number"
@@ -430,6 +443,15 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
                 }}
               ></input>
             </div>
+            <div>Caption Text</div>
+            <input
+              type="text"
+              id="captionbox"
+              name="captionbox"
+              onChange={(e) => {
+                setCaptionText(e.target.value);
+              }}
+            ></input>
           </div>
           <div className="tools" style={{ fontSize: "1.2em", maxHeight: "140px" }}>
             <p>Stroke Color</p>
