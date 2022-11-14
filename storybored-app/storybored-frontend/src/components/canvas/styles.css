@@ -14,9 +14,13 @@
   position: relative;
   display: inline-block;
   vertical-align: middle;
-  padding: 2rem 2rem;
+  padding: 1rem 1rem;
 }
 
+.options .tools .react-colorful {
+  height: 110px;
+  width: 140px;
+}
 .Canvas-Container {
   display: flex;
   justify-content: center;

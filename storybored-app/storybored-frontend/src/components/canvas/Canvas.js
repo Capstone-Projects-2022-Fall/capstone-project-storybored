@@ -230,9 +230,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const setRect = () => setTool("rectangle");
   const setCircle = () => setTool("circle");
   const setCustom = () => setTool("custom shape");
-  const toggleColorSelectors = () => {
-    setShowColorSelectors((prevState) => !prevState);
-  };
+
   const setSelect = () => setTool("select");
 
   //Array containing objects for the toolbar; each object has an onClick function and an icon
@@ -241,7 +239,6 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     { func: setRect, icon: <GiSquare /> },
     { func: setCircle, icon: <GiCircle /> },
     { func: setCustom, icon: <BiShapePolygon /> },
-    { func: toggleColorSelectors, icon: <GiPaintBucket /> },
     { func: setSelect, icon: <GiPointing /> },
   ];
 
@@ -351,19 +348,6 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       </div>
       <Toolbar items={toolbar_params} />
 
-      {showColorSelectors && (
-        <div className="Color-Selectors">
-          <div className="Stroke">
-            <p>Stroke Color</p>
-            <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
-          </div>
-          <div className="Fill">
-            <p>Fill Color</p>
-            <HexColorPicker color={fillColor} onChange={setFillColor} />
-          </div>
-        </div>
-      )}
-
       <div className="Canvas-Container">
         <Stage
           className="Canvas"
@@ -382,12 +366,12 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         </Stage>
         <section className="options">
           {/* <div className="tools"> */}
-          <div className="tools" style={{ fontSize: "2em" }}>
+          <div className="tools" style={{ fontSize: "2em", maxWidth: "200px" }}>
             Tool: {tool}
           </div>
 
           {/* <div> */}
-          <div className="tools">
+          <div className="tools" style={{ fontSize: "1.5em" }}>
             <div>Stroke width</div>
             <div>
               <input
@@ -401,11 +385,19 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
               ></input>
             </div>
           </div>
-          <div className="tools">
+          <div className="tools" style={{ fontSize: "1.2em", maxHeight: "140px" }}>
+            <p>Stroke Color</p>
+            <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
+          </div>
+          <div className="tools" style={{ fontSize: "1.2em", maxHeight: "140px" }}>
+            <p>Fill Color</p>
+            <HexColorPicker color={fillColor} onChange={setFillColor} />
+          </div>
+          <div className="tools" style={{ fontSize: "1.5em" }}>
             <button onClick={undo}>Undo</button>
             <button onClick={redo}>Redo</button>
           </div>
-          <div className="tools">
+          <div className="tools" style={{ fontSize: "1.5em" }}>
             <label htmlFor="framepicker">Select Frame:</label>
             <select
               name="framepicker"
