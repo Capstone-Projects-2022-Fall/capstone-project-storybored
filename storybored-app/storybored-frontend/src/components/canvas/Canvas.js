@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
-import { GiPencil, GiSquare, GiCircle, GiPaintBucket, GiPointing } from "react-icons/gi";
+import { GiPencil, GiSquare, GiCircle, GiPaintBucket, GiPointing, GiHeartInside, GiHieroglyphLegs } from "react-icons/gi";
 import { BiShapePolygon } from "react-icons/bi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
@@ -190,8 +190,14 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       if (isModding.current && tool === "select") {
         let i = shapes.findIndex((element) => element.id === e.target.attrs.id);
         modShape = shapes[i];
-        modShape.x = pos.x;
-        modShape.y = pos.y;
+        if (modShape.type === "circle") {
+          modShape.x = pos.x;
+          modShape.y = pos.y;
+        }
+        if (modShape.type === "rectangle") {
+          modShape.x = pos.x - modShape.width / 2;
+          modShape.y = pos.y - modShape.height / 2;
+        }
         socket.emit("sendData", room, focusedCanvas, JSON.stringify(modShape));
       }
     } catch (err) {
@@ -325,6 +331,8 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         draggable: false,
         listening: true,
         user: "test",
+        offsetX: 0,
+        offsetY: 0,
       };
     }
     return newShape;
