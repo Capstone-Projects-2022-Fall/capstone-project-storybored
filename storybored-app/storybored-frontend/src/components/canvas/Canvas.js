@@ -198,6 +198,10 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
           modShape.x = pos.x - modShape.width / 2;
           modShape.y = pos.y - modShape.height / 2;
         }
+        if (modShape.type === "line") {
+          modShape.offsetX = -(pos.x - modShape.points[0]);
+          modShape.offsetY = -(pos.y - modShape.points[1] - 10);
+        }
         socket.emit("sendData", room, focusedCanvas, JSON.stringify(modShape));
       }
     } catch (err) {
@@ -283,6 +287,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         tension: 0.5,
         lineCap: "round",
         draggable: false,
+        listening: true,
         user: "test",
       };
     }
