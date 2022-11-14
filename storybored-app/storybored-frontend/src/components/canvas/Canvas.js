@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { GiPencil, GiSquare, GiCircle, GiPointing } from "react-icons/gi";
-import { BsFillEraserFill } from "react-icons/bs";
+import { BsFillEraserFill, BsTypeBold } from "react-icons/bs";
 import { BiShapePolygon } from "react-icons/bi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
@@ -39,7 +39,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const stageRef = React.useRef(null);
   const nickname = username;
   const room = roomName;
-  const drawing_tools = ["pen", "rectangle", "circle", "custom shape"];
+  const drawing_tools = ["pen", "rectangle", "circle", "custom shape", "words"];
 
   useEffect(() => {
     socket.emit("join", { nickname, room }, (error) => {
@@ -133,6 +133,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     const pos = e.target.getStage().getPointerPosition();
     try {
       if (drawing_tools.includes(tool)) {
+        console.log("here");
         isDrawing.current = true;
         lastShape = initializeShape(tool, pos);
         updateUndoStack((undoStack) => [...undoStack, tempId]);
@@ -165,7 +166,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const handleMouseMove = (e) => {
     try {
       // no drawing - skipping
-      if ((!isDrawing.current && tool !== "select") || tool === "erase") {
+      if ((!isDrawing.current && tool !== "select") || tool === "erase" || tool == "words") {
         return;
       }
       //get pointer position
@@ -258,6 +259,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const setCustom = () => setTool("custom shape");
   const setSelect = () => setTool("select");
   const setErase = () => setTool("erase");
+  const setWords = () => setTool("words");
 
   //Array containing objects for the toolbar; each object has an onClick function and an icon
   const toolbar_params = [
@@ -267,6 +269,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     { func: setCustom, icon: <BiShapePolygon /> },
     { func: setSelect, icon: <GiPointing /> },
     { func: setErase, icon: <BsFillEraserFill /> },
+    { func: setWords, icon: <BsTypeBold /> },
   ];
 
   const UserDropdown = () => {
@@ -365,6 +368,18 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         user: "test",
         offsetX: 0,
         offsetY: 0,
+        rotation: 0,
+      };
+    }
+    if (tool === "words") {
+      newShape = {
+        type: "words",
+        id: tempId,
+        x: pos.x,
+        y: pos.y,
+        text: "hello there",
+        draggable: false,
+        listening: true,
         rotation: 0,
       };
     }
