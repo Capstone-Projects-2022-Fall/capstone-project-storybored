@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { GiPencil, GiSquare, GiCircle, GiPointing } from "react-icons/gi";
+import { BsFillEraserFill } from "react-icons/bs";
 import { BiShapePolygon } from "react-icons/bi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
@@ -32,6 +33,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   //usestate to keep track of index of focused canvas
   const [uri, setUri] = useState([]);
   const [updateUri, setUpdateUri] = useState(true);
+  const [selectOption, setSelectOption] = useState("drag");
   let lastShape;
   let modShape;
   const stageRef = React.useRef(null);
@@ -143,6 +145,13 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         let i = shapes.findIndex((element) => element.id === e.target.attrs.id);
         modShape = shapes[i];
         console.log(modShape);
+      } else if (tool === "erase") {
+        if (e.target.attrs.className === "Canvas") {
+          return;
+        }
+        console.log("here");
+        console.log(e.target.attrs.id);
+        socket.emit("removeShape", room, e.target.attrs.id);
       }
       return;
     } catch (err) {}
@@ -156,7 +165,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const handleMouseMove = (e) => {
     try {
       // no drawing - skipping
-      if (!isDrawing.current && tool !== "select") {
+      if ((!isDrawing.current && tool !== "select") || tool === "erase") {
         return;
       }
       //get pointer position
@@ -190,16 +199,34 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         let i = shapes.findIndex((element) => element.id === e.target.attrs.id);
         modShape = shapes[i];
         if (modShape.type === "circle") {
-          modShape.x = pos.x;
-          modShape.y = pos.y;
+          if (selectOption === "drag") {
+            modShape.x = pos.x;
+            modShape.y = pos.y;
+          }
+          if (selectOption === "rotateR" || selectOption === "rotateL") {
+            let sum = selectOption === "rotateR" ? 1 : -1;
+            modShape.rotation = modShape + sum;
+          }
         }
         if (modShape.type === "rectangle") {
-          modShape.x = pos.x - modShape.width / 2;
-          modShape.y = pos.y - modShape.height / 2;
+          if (selectOption === "drag") {
+            modShape.x = pos.x - modShape.width / 2;
+            modShape.y = pos.y - modShape.height / 2;
+          }
+          if (selectOption === "rotateR" || selectOption === "rotateL") {
+            let sum = selectOption === "rotateR" ? 1 : -1;
+            modShape.rotation = modShape.rotation + sum;
+          }
         }
         if (modShape.type === "line") {
-          modShape.offsetX = -(pos.x - modShape.points[0]);
-          modShape.offsetY = -(pos.y - modShape.points[1] - 10);
+          if (selectOption === "drag") {
+            modShape.offsetX = -(pos.x - modShape.points[0]);
+            modShape.offsetY = -(pos.y - modShape.points[1] - 10);
+          }
+          if (selectOption === "rotateR" || selectOption === "rotateL") {
+            let sum = selectOption === "rotateR" ? 1 : -1;
+            modShape.rotation = modShape + sum;
+          }
         }
         socket.emit("sendData", room, focusedCanvas, JSON.stringify(modShape));
       }
@@ -229,8 +256,8 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const setRect = () => setTool("rectangle");
   const setCircle = () => setTool("circle");
   const setCustom = () => setTool("custom shape");
-
   const setSelect = () => setTool("select");
+  const setErase = () => setTool("erase");
 
   //Array containing objects for the toolbar; each object has an onClick function and an icon
   const toolbar_params = [
@@ -239,6 +266,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     { func: setCircle, icon: <GiCircle /> },
     { func: setCustom, icon: <BiShapePolygon /> },
     { func: setSelect, icon: <GiPointing /> },
+    { func: setErase, icon: <BsFillEraserFill /> },
   ];
 
   const UserDropdown = () => {
@@ -285,6 +313,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         draggable: false,
         listening: true,
         user: "test",
+        rotation: 0,
       };
     }
     if (tool === "rectangle") {
@@ -301,6 +330,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         draggable: false,
         listening: true,
         user: tool,
+        rotation: 0,
       };
     }
     if (tool === "circle") {
@@ -316,6 +346,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         draggable: false,
         listening: true,
         user: "test",
+        rotation: 0,
       };
     }
     if (tool === "custom shape") {
@@ -334,6 +365,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         user: "test",
         offsetX: 0,
         offsetY: 0,
+        rotation: 0,
       };
     }
     return newShape;
@@ -395,15 +427,33 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
           <div className="tools" style={{ fontSize: "1.5em" }}>
             <button onClick={undo}>Undo</button>
             <button onClick={redo}>Redo</button>
+            <div>
+              <label htmlFor="modepicker">Select Tool Mode:</label>
+              <select
+                name="modepicker"
+                id="modepicker"
+                value={selectOption}
+                onChange={(e) => {
+                  setSelectOption(e.target.value);
+                }}
+              >
+                <option value="drag">Drag</option>
+                <option value="rotateR">Rotate Clockwise</option>
+                <option value="rotateL">Rotate Counter Clockwise</option>
+              </select>
+            </div>
           </div>
           <div className="tools" style={{ fontSize: "1.5em" }}>
-            <label htmlFor="framepicker">Select Frame:</label>
+            <label htmlFor="framepicker">Current Frame:</label>
             <select
               name="framepicker"
               id="framepicker"
               value={focusedCanvas}
               onChange={(e) => {
                 setFocusedCanvas(parseInt(e.target.value));
+                let empty_stack = [];
+                updateUndoStack([...empty_stack]);
+                updateRedoStack([...empty_stack]);
                 // console.log(focusedCanvas);
                 socket.emit("updateCanvas", room, focusedCanvas);
               }}

@@ -26,6 +26,7 @@ const Rectangle = (props) => {
       listening={properties.listening}
       //   onClick={handleClick}
       user={properties.user}
+      rotation={properties.rotation}
       //   globalCompositeOperation={properties.globalCompositeOperation}
       //   globalCompositeOperation={tool === "eraser" ? "destination-out" : "source-over"}
       //   onMouseOver={handleMouseOver()}

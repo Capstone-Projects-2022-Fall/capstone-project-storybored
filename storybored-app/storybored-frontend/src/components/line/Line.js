@@ -18,6 +18,7 @@ const Line = (props) => {
       draggable={properties.draggable}
       offsetX={properties.offsetX}
       offsetY={properties.offsetY}
+      rotation={properties.rotation}
       //   globalCompositeOperation={properties.globalCompositeOperation}
       //   globalCompositeOperation={tool === "eraser" ? "destination-out" : "source-over"}
     />
