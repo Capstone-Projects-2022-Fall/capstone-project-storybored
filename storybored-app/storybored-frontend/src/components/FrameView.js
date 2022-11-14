@@ -14,7 +14,7 @@ const FrameView = ({ numFrames, frame, width, height }) => {
     <div className="FrameViewContainer" style={{ width: (width - 360) / 5 }}>
       {items.map((i) => (
         <div key={j++} className="FrameViewItem" style={{ width: "100%", height: item_size }}>
-          <img className="FrameViewImage" src={frame[ind++]} />
+          <img className="FrameViewImage" src={frame[ind++]} alt={""} />
         </div>
       ))}
     </div>

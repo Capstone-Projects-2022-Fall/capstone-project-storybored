@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
-import { GiPencil, GiSquare, GiCircle, GiPaintBucket, GiPointing, GiHeartInside, GiHieroglyphLegs } from "react-icons/gi";
+import { GiPencil, GiSquare, GiCircle, GiPointing } from "react-icons/gi";
 import { BiShapePolygon } from "react-icons/bi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
@@ -22,7 +22,6 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const [fillColor, setFillColor] = useState("#fff"); //white
   const [tempId, setTempId] = useState((tempId) => (tempId = generateId()));
   const [strokeWidth, setStrokeWidth] = useState(2);
-  const [showColorSelectors, setShowColorSelectors] = useState(false);
   const [undoStack, updateUndoStack] = useState([]);
   const [redoStack, updateRedoStack] = useState([]);
   const isDrawing = useRef(false);
