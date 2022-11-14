@@ -154,7 +154,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
         }
         console.log("here");
         console.log(e.target.attrs.id);
-        socket.emit("removeShape", room, e.target.attrs.id);
+        socket.emit("removeShape", room, focusedCanvas, e.target.attrs.id);
       }
       return;
     } catch (err) {}
@@ -297,7 +297,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     let popped = shapes.filter((element) => element.id === toBeUndone);
     console.log(popped);
     updateRedoStack((redoStack) => [...redoStack, popped]);
-    socket.emit("removeShape", room, toBeUndone);
+    socket.emit("removeShape", room, focusedCanvas, toBeUndone);
     return;
   }
 

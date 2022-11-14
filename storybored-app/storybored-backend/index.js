@@ -116,12 +116,12 @@ io.on("connection", (socket) => {
     io.to(user.id).emit("update", { message: msg });
   });
 
-  socket.on("removeShape", (room, data) => {
+  socket.on("removeShape", (room, focus, data) => {
     const user = getUser(room, socket.id);
     if (!rooms.has(user.room)) {
       return;
     }
-    rooms.get(user.room).shapes[0].delete(data);
+    rooms.get(user.room).shapes[focus].delete(data);
     io.to(user.room).emit("deleteshape", data);
   });
 
