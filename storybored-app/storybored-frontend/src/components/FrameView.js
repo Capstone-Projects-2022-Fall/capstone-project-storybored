@@ -11,7 +11,7 @@ const FrameView = ({ numFrames, frame, width, height }) => {
   //   function setFocusedCanvas(event)
 
   return (
-    <div className="FrameViewContainer" style={{ width: (width - 360) / 5 }}>
+    <div className="FrameViewContainer" style={{ width: (width - 360) / 5, backgroundColor: "white" }}>
       {items.map((i) => (
         <div key={j++} className="FrameViewItem" style={{ width: "100%", height: item_size }}>
           <img className="FrameViewImage" src={frame[ind++]} alt={""} />

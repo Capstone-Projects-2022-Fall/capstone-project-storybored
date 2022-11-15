@@ -17,6 +17,9 @@ const ENDPOINT = "139.144.172.98:7007";
 // const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
+//nice light blue background color
+document.body.style = "background: hsl(182, 25%, 98%)";
+
 const Canvas = ({ shapes, setShapes, username, roomName }) => {
   //can we combine these drawing options into one object usestate?
   const [tool, setTool] = useState("pen");
@@ -401,7 +404,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
 
   return (
     <div className="Container" style={{ maxWidth: width }}>
-      <div className="userList">
+      <div className="userList" style={{ backgroundColor: "white" }}>
         <h3 onClick={() => setShowUsers((prevState) => !prevState)}>Users [v]</h3>
         <UserDropdown />
       </div>
