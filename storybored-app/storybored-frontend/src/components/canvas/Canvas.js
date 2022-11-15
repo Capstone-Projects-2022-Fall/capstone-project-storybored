@@ -18,7 +18,7 @@ const ENDPOINT = "139.144.172.98:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
 //nice light blue background color
-document.body.style = "background: hsl(182, 25%, 98%)";
+document.body.style = "background: hsl(216, 100%, 99%)";
 
 const Canvas = ({ shapes, setShapes, username, roomName }) => {
   //can we combine these drawing options into one object usestate?
