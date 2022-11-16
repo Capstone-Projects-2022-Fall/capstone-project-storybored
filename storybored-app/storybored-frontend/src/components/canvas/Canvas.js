@@ -1,6 +1,6 @@
 import React, { useState, useRef,  useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
-import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
+import { GiPencil, GiSquare, GiCircle, GiPentagon, GiLargePaintBrush } from "react-icons/gi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
 import "./styles.css";
@@ -12,8 +12,8 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 
 const width = window.innerWidth;
 const height = window.innerHeight;
-const ENDPOINT = "139.144.172.98:7007"
-//const ENDPOINT = "http://localhost:7007";
+//const ENDPOINT = "139.144.172.98:7007"
+const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
 const room = 4;
@@ -128,9 +128,33 @@ const Canvas = ({ shapes, setShapes, username }) => {
         user: "test",
       };
     }
-    if (tool === "eraser") {
-      return;
+    if (tool === "pentagon") {
+      lastShape = {
+        type: "pentagon",
+        id: tempId,
+        ang:i/5 * Math.PI * 2 + rotation,
+        x: Math.cos(ang) * radius + x,
+        y: Math.sin(ang) * radius + y,
+        fill: fillColor,
+        stroke: strokeColor,
+        strokeWidth: strokeWidth,
+        draggable: false,
+        listening: false,
+        user: "test",
+      };
     }
+
+    if (tool === "eraser") {
+      if (eraseEnable) {
+        noErase();
+        eraseEnable = false;
+      }
+      else {
+        erase();
+        eraseEnable = true;
+      }
+    }
+
     // setShapes(shapes.concat(lastShape));
     socket.emit("sendData", JSON.stringify(lastShape));
 } catch(TypeError){
@@ -166,6 +190,14 @@ const Canvas = ({ shapes, setShapes, username }) => {
       let rad = Math.sqrt(x * x + y * y);
       tempShape.radius = rad;
     }
+    if(tool ==="pentagon"){
+      let  x= stage.width() / 2;
+      let  y=stage.height() / 2;
+      let  size= 5;
+      let radius = (i / 5) * Math.PI * 2 + rotation;
+      let area = (5/2)*(radius*radius)*(sin(3*pi/5));
+      
+    }
     socket.emit("sendData", JSON.stringify(tempShape));
 }catch(TypeError){
 		console.log("oops! your tool broke!");
@@ -188,6 +220,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
   const setPen = () => setTool("pen");
   const setRect = () => setTool("rectangle");
   const setCircle = () => setTool("circle");
+  const setPentagon =()=> setTool("pentagon");
   const toggleColorSelectors = () => {
     setShowColorSelectors((prevState) => !prevState);
   };
@@ -197,6 +230,7 @@ const Canvas = ({ shapes, setShapes, username }) => {
     { func: setPen, icon: <GiPencil /> },
     { func: setRect, icon: <GiSquare /> },
     { func: setCircle, icon: <GiCircle /> },
+    { func: setPentagon, icon: <GiPentagon /> },
     { func: toggleColorSelectors, icon: <GiLargePaintBrush /> },
   ];
 
