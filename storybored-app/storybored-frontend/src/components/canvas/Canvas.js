@@ -10,6 +10,7 @@ import "./styles.css";
 import io from "socket.io-client";
 import { Stage, Layer } from "react-konva";
 import { NotificationContainer, NotificationManager } from "react-notifications";
+import Slideshow from "../Slideshow";
 
 const width = 1600;
 const height = 800;
@@ -29,13 +30,14 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const isDrawing = useRef(false);
   const isModding = useRef(false);
   const [players, setPlayers] = useState([]);
-  const [showUsers, setShowUsers] = useState(false);
   const [focusedCanvas, setFocusedCanvas] = useState(0);
   const [captionText, setCaptionText] = useState("");
   //usestate to keep track of index of focused canvas
   const [uri, setUri] = useState([]);
   const [updateUri, setUpdateUri] = useState(true);
   const [selectOption, setSelectOption] = useState("drag");
+  const [showSlideshow, setShowSlideshow] = useState(false);
+
   let lastShape;
   let modShape;
   const stageRef = React.useRef(null);
@@ -115,7 +117,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   //Updating FrameView
   //setTimeout ensures FrameViewImage's are only updated once every 3 seconds, for performance reasons
   useEffect(() => {
-    if (updateUri) {
+    if (updateUri && !showSlideshow) {
       setUpdateUri(false);
       socket.emit("updateFrames", room, focusedCanvas, stageRef.current.toDataURL());
       socket.emit("getFrames", room);
@@ -285,7 +287,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   ];
 
   const UserDropdown = () => {
-    if (showUsers) return players.map((p) => <p>{p.nickname}</p>);
+    return players.map((p) => <p>{p.nickname}</p>);
   };
 
   function undo() {
@@ -399,121 +401,126 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     return newShape;
   }
 
+  
   return (
     <div className="Container" style={{ maxWidth: width }}>
-      <div className="userList">
-        <h3>Users</h3>
-        <UserDropdown />
-      </div>
-      <Toolbar items={toolbar_params} />
-
-      <div className="Canvas-Container">
-        <Stage
-          className="Canvas"
-          width={width - 560}
-          height={height - 120}
-          onMouseDown={handleMouseDown}
-          onMousemove={handleMouseMove}
-          onMouseup={handleMouseUp}
-          ref={stageRef}
-        >
-          <Layer>
-            {shapes.map((shape, i) => (
-              <Shape key={i} shape={shape} />
-            ))}
-          </Layer>
-        </Stage>
-        <section className="options">
-          {/* <div className="tools"> */}
-          <div className="tools" style={{ fontSize: "2em", maxWidth: "200px" }}>
-            Tool: {tool}
-          </div>
-
-          {/* <div> */}
-          <div className="tools" style={{ fontSize: "1.5em" }}>
-            <div>Stroke Width</div>
-            <div>
-              <input
-                type="number"
-                value={strokeWidth}
-                id="strokebox"
-                onChange={(e) => {
-                  setStrokeWidth(parseInt(e.target.value));
-                  //   console.log(focusedCanvas);
-                }}
-              ></input>
-            </div>
-            <div>Caption Text</div>
-            <input
-              type="text"
-              id="captionbox"
-              name="captionbox"
-              onChange={(e) => {
-                setCaptionText(e.target.value);
-              }}
-            ></input>
-          </div>
-          <div className="tools" style={{ fontSize: "1.2em", maxHeight: "140px" }}>
-            <p>Stroke Color</p>
-            <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
-          </div>
-          <div className="tools" style={{ fontSize: "1.2em", maxHeight: "140px" }}>
-            <p>Fill Color</p>
-            <HexColorPicker color={fillColor} onChange={setFillColor} />
-          </div>
-          <div className="tools" style={{ fontSize: "1.5em" }}>
-            <button onClick={undo}>Undo</button>
-            <button onClick={redo}>Redo</button>
-            <div>
-              <label htmlFor="modepicker">Select Tool Mode:</label>
-              <select
-                name="modepicker"
-                id="modepicker"
-                value={selectOption}
-                onChange={(e) => {
-                  setSelectOption(e.target.value);
-                }}
-              >
-                <option value="drag">Drag</option>
-                <option value="rotateR">Rotate Clockwise</option>
-                <option value="rotateL">Rotate Counter Clockwise</option>
-              </select>
-            </div>
-          </div>
-          <div className="tools" style={{ fontSize: "1.5em" }}>
-            <label htmlFor="framepicker">Current Frame:</label>
-            <select
-              name="framepicker"
-              id="framepicker"
-              value={focusedCanvas}
-              onChange={(e) => {
-                setFocusedCanvas(parseInt(e.target.value));
-                let empty_stack = [];
-                updateUndoStack([...empty_stack]);
-                updateRedoStack([...empty_stack]);
-                // console.log(focusedCanvas);
-                socket.emit("updateCanvas", room, focusedCanvas);
-              }}
-            >
-              <option value="0">Frame 1</option>
-              <option value="1">Frame 2</option>
-              <option value="2">Frame 3</option>
-            </select>
-          </div>
-          {/* </div> */}
-          {/* </div> */}
-        </section>
-      </div>
-
-      <div className="RightContainer" style={{ height: height - 120 }}>
-        <div className="NotificationContainer">
-          <NotificationContainer />
-        </div>
-
+      <button onClick={() => setShowSlideshow(!showSlideshow)} >SLIDESHOW!</button>
+      {showSlideshow ? <Slideshow Frames={uri}/> : (
         <>
-          <FrameView numFrames={3} frame={uri} width={width} height={height} />
-        </>
-      </div>
+          <div className="userList">
+            <h3>Users</h3>
+            <UserDropdown />
+          </div> 
+          <Toolbar items={toolbar_params} />
+
+          <div className="Canvas-Container">
+            <Stage
+              className="Canvas"
+              width={width - 560}
+              height={height - 120}
+              onMouseDown={handleMouseDown}
+              onMousemove={handleMouseMove}
+              onMouseup={handleMouseUp}
+              ref={stageRef}
+            >
+              <Layer>
+                {shapes.map((shape, i) => (
+                  <Shape key={i} shape={shape} />
+                ))}
+              </Layer>
+            </Stage>
+            <section className="options">
+              {/* <div className="tools"> */}
+              <div className="tools" style={{ fontSize: "2em", maxWidth: "200px" }}>
+                Tool: {tool}
+              </div>
+
+              {/* <div> */}
+              <div className="tools" style={{ fontSize: "1.5em" }}>
+                <div>Stroke Width</div>
+                <div>
+                  <input
+                    type="number"
+                    value={strokeWidth}
+                    id="strokebox"
+                    onChange={(e) => {
+                      setStrokeWidth(parseInt(e.target.value));
+                      //   console.log(focusedCanvas);
+                    }}
+                  ></input>
+                </div>
+                <div>Caption Text</div>
+                <input
+                  type="text"
+                  id="captionbox"
+                  name="captionbox"
+                  onChange={(e) => {
+                    setCaptionText(e.target.value);
+                  }}
+                ></input>
+              </div>
+              <div className="tools" style={{ fontSize: "1.2em", maxHeight: "140px" }}>
+                <p>Stroke Color</p>
+                <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
+              </div>
+              <div className="tools" style={{ fontSize: "1.2em", maxHeight: "140px" }}>
+                <p>Fill Color</p>
+                <HexColorPicker color={fillColor} onChange={setFillColor} />
+              </div>
+              <div className="tools" style={{ fontSize: "1.5em" }}>
+                <button onClick={undo}>Undo</button>
+                <button onClick={redo}>Redo</button>
+                <div>
+                  <label htmlFor="modepicker">Select Tool Mode:</label>
+                  <select
+                    name="modepicker"
+                    id="modepicker"
+                    value={selectOption}
+                    onChange={(e) => {
+                      setSelectOption(e.target.value);
+                    }}
+                  >
+                    <option value="drag">Drag</option>
+                    <option value="rotateR">Rotate Clockwise</option>
+                    <option value="rotateL">Rotate Counter Clockwise</option>
+                  </select>
+                </div>
+              </div>
+              <div className="tools" style={{ fontSize: "1.5em" }}>
+                <label htmlFor="framepicker">Current Frame:</label>
+                <select
+                  name="framepicker"
+                  id="framepicker"
+                  value={focusedCanvas}
+                  onChange={(e) => {
+                    setFocusedCanvas(parseInt(e.target.value));
+                    let empty_stack = [];
+                    updateUndoStack([...empty_stack]);
+                    updateRedoStack([...empty_stack]);
+                    // console.log(focusedCanvas);
+                    socket.emit("updateCanvas", room, focusedCanvas);
+                  }}
+                >
+                  <option value="0">Frame 1</option>
+                  <option value="1">Frame 2</option>
+                  <option value="2">Frame 3</option>
+                </select>
+              </div>
+              {/* </div> */}
+              {/* </div> */}
+            </section>
+          </div>
+
+          <div className="RightContainer" style={{ height: height - 120 }}>
+            <div className="NotificationContainer">
+              <NotificationContainer />
+            </div>
+
+            <>
+              <FrameView numFrames={3} frame={uri} width={width} height={height} />
+            </>
+          </div>
+        </> )}
     </div>
   );
 };
