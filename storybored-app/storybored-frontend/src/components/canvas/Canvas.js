@@ -14,8 +14,8 @@ import Slideshow from "../Slideshow";
 
 const width = 1600;
 const height = 800;
-//const ENDPOINT = "139.144.172.98:7007";
- const ENDPOINT = "http://localhost:7007";
+const ENDPOINT = "139.144.172.98:7007";
+//const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
 const Canvas = ({ shapes, setShapes, username, roomName }) => {
@@ -404,7 +404,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   
   return (
     <div className="Container" style={{ maxWidth: width }}>
-      <button onClick={() => setShowSlideshow(!showSlideshow)} >SLIDESHOW!</button>
+      <button onClick={() => setShowSlideshow(!showSlideshow)} > {showSlideshow ? "Back" : "Slideshow"} </button>
       {showSlideshow ? <Slideshow Frames={uri}/> : (
         <>
           <div className="userList">
