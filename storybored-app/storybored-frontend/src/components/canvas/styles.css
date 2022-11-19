@@ -12,13 +12,20 @@
 
 .options .tools {
   position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  padding: 1rem 1rem;
 }
 
+.options .tools .react-colorful {
+  height: 100px;
+  width: 140px;
+}
 .Canvas-Container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0.5em ;
+  margin: 0.5em;
   flex-direction: column;
 }
 
@@ -29,7 +36,7 @@
 
 .Toolbar {
   display: flex;
-  justify-content:flex-start;
+  justify-content: flex-start;
   align-items: center;
   flex-direction: column;
   width: 5rem;
@@ -37,7 +44,6 @@
   margin-top: 10px;
   margin-bottom: 10px;
   border: solid black 1px;
-  
 }
 
 .Toolbar-Item {
@@ -64,7 +70,7 @@
   text-align: center;
 }
 
-.Color-Selectors .react-colorful{
+.Color-Selectors .react-colorful {
   padding: 20px;
   width: 80px;
   height: 80px;
@@ -75,10 +81,9 @@
 }
 
 .Container .NotificationContainer {
-
   width: 120px;
-  max-width:120px;
-  min-width:120px;
+  max-width: 120px;
+  min-width: 120px;
   height: fit-content;
   margin: 0.5em;
   font-size: larger;
@@ -106,7 +111,7 @@
 .RightContainer {
   display: flex;
   flex-direction: column;
-  align-items:flex-start;
+  align-items: flex-start;
   justify-content: space-between;
 }
 

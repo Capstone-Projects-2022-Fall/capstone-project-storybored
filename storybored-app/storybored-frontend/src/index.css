@@ -1,23 +1,21 @@
 * {
-  font-family: 'Indie Flower';
+  font-family: "Indie Flower";
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
-.CreateRoom, .Home {
+.CreateRoom,
+.Home {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -31,34 +29,38 @@ code {
 }
 
 .CreateRoom {
-  background-color: #9eb9ff;;
+  background-color: #9eb9ff;
 }
 
 .Home {
-  
   background-color: #f4c79e;
 }
 
-.CreateRoom h1, .Home h1 {
+.CreateRoom h1,
+.Home h1 {
   position: absolute;
   top: 0;
   margin: 0.5em auto;
   font-size: 3em;
 }
 
-.CreateRoom #start-button, .Home #create-room-button {
+.CreateRoom #start-button,
+.Home #create-room-button {
   width: 12rem;
   height: 5rem;
   font-size: 1em;
   border: 1px solid black;
 }
 
-.CreateRoom label, .Home label, form {
+.CreateRoom label,
+.Home label,
+form {
   margin: 0.5em;
   font-size: 1.25em;
 }
 
-.CreateRoom #canvas-size-input, .Home #username-input {
+.CreateRoom #canvas-size-input,
+.Home #username-input {
   font-size: 1em;
 }
 
@@ -74,5 +76,5 @@ code {
 }
 
 .CreateRoom #private-input {
-  transform: scale(2)
+  transform: scale(2);
 }

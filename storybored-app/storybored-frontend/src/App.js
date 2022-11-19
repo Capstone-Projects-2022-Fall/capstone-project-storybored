@@ -7,7 +7,6 @@ import CreateRoom from "./components/CreateRoom";
 import { RoomProvider } from "./roomContext";
 import { UsersProvider } from "./usersContext";
 
-
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 const App = ({ context, url }) => {
@@ -15,25 +14,25 @@ const App = ({ context, url }) => {
   // const socket = useContext(SocketContext);
   // const { users } = useContext(UsersContext);
   const [shapes, setShapes] = useState([]);
-  const [username, setUsername] = useState("player")
-  const defineUsername = (newUsername) => {
-    setUsername(newUsername)
-  }
+  const [username, setUsername] = useState("default player");
+  const [roomName, setRoomName] = useState("common rabble");
+  const defineUsername = (newUsername, newRoom) => {
+    setUsername(newUsername);
+    setRoomName(newRoom);
+  };
 
   return (
     <div className="App">
       <header className="App-header">
         <RoomProvider>
           <UsersProvider>
-            {/* <SocketProvider> */}
             <Router>
               <Routes>
-                <Route path="" element={<Home callback={defineUsername}/>} />
+                <Route path="" element={<Home callback={defineUsername} />} />
                 <Route path="/CreateRoom" element={<CreateRoom />} />
-                <Route path="/Canvas" element={<Canvas shapes={shapes} setShapes={setShapes} username={username}/>} />
+                <Route path="/Canvas" element={<Canvas shapes={shapes} setShapes={setShapes} username={username} roomName={roomName} />} />
               </Routes>
             </Router>
-            {/* </SocketProvider> */}
           </UsersProvider>
         </RoomProvider>
       </header>
@@ -42,4 +41,3 @@ const App = ({ context, url }) => {
 };
 
 export default App;
-
