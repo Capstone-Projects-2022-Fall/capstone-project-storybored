@@ -124,7 +124,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       //   setUri(stageRef.current.toDataURL());
       setTimeout(() => {
         setUpdateUri(true);
-      }, 3000);
+      }, 1500);
       //console.log("URI: " + uri);}
     }
   });
@@ -404,8 +404,11 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   
   return (
     <div className="Container" style={{ maxWidth: width }}>
-      <button onClick={() => setShowSlideshow(!showSlideshow)} > {showSlideshow ? "Back" : "Slideshow"} </button>
-      {showSlideshow ? <Slideshow Frames={uri}/> : (
+      
+      {showSlideshow ? (<div className="Slideshow-Page-Container">
+                          <Slideshow Frames={uri}/>
+                          <button id="move-to-canvas-button" onClick={() => setShowSlideshow(!showSlideshow)} > Back </button>
+                        </div>) : (
         <>
           <div className="userList">
             <h3>Users</h3>
@@ -506,6 +509,11 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
                   <option value="2">Frame 3</option>
                 </select>
               </div>
+
+              <div className="tools" style={{ fontSize: "1.5em" }}>
+              <button onClick={() => setShowSlideshow(!showSlideshow)} > View Slideshow </button>
+              </div>
+              
               {/* </div> */}
               {/* </div> */}
             </section>
