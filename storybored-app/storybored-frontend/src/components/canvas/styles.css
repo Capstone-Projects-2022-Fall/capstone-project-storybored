@@ -34,7 +34,7 @@
   border: black solid 1px;
 }
 
-.Toolbar {
+.Container .Toolbar {
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -46,7 +46,7 @@
   border: solid black 1px;
 }
 
-.Toolbar-Item {
+.Container .Toolbar-Item {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -103,11 +103,7 @@
   font-size: larger;
 }
 
-.Container .userList h3 {
-  cursor: pointer;
-}
-
-.Container .userList p {
+.Container .userList p, h3{
   margin: 0;
   cursor: default;
 }
@@ -133,4 +129,51 @@
   min-height: 100px;
   max-width: 100%;
   max-height: 100%;
+}
+
+.Slideshow-Container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: column;
+}
+
+.Slideshow-Container .Toolbar {
+  border: none;
+  display: flex;
+  flex-flow: row;
+  width: 200px;
+  margin: 0 auto;
+}
+
+.Slideshow-Container .Toolbar-Item {
+  min-height: 50px;
+}
+
+.Slideshow-Container .Frame-Container {
+  border: solid black 1px;
+  min-width: 1040px;
+  min-height: 700px;
+}
+
+.Slideshow-Container p {
+  font-size: x-large;
+  margin: 0;
+}
+
+.Slideshow-Container input {
+  margin-top: 1em;
+  min-width: 200px;
+}
+
+.Slideshow-Page-Container {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.Slideshow-Page-Container #move-to-canvas-button{
+  margin-top: 1em;
+  width: 15%;
 }
