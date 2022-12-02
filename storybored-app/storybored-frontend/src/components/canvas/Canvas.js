@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
-import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush } from "react-icons/gi";
+import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush, GiSave } from "react-icons/gi";
+import { GrUpload } from "react-icons/gr";
+import { HiSaveAs } from "react-icons/hi";
 import { BiShapePolygon } from "react-icons/bi";
 import Shape from "../shape/Shape";
 import Toolbar from "../Toolbar.js";
@@ -249,6 +251,31 @@ const Canvas = ({ shapes, setShapes, username, roomName, passwordValue }) => {
     setShowColorSelectors((prevState) => !prevState);
   };
 
+  const saveAsSvg = () => {
+    const uri = stageRef.current.toDataURL();
+    downloadURI(uri, room + '.png');
+  }
+
+  const saveAsJson = () => {
+    const uri = URL.createObjectURL(new Blob([JSON.stringify(shapes)]));
+    downloadURI(uri, room + '.json');
+  }
+
+  const openAsJson = () => {
+    document.getElementById('openShapeFile').click();
+  }
+
+  function readFile(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      setShapes(JSON.parse(e.target.result));
+    }
+
+    reader.readAsText(file);
+  }
+
   //Array containing objects for the toolbar; each object has an onClick function and an icon
   const toolbar_params = [
     { func: setPen, icon: <GiPencil /> },
@@ -256,6 +283,9 @@ const Canvas = ({ shapes, setShapes, username, roomName, passwordValue }) => {
     { func: setCircle, icon: <GiCircle /> },
     { func: setCustom, icon: <BiShapePolygon /> },
     { func: toggleColorSelectors, icon: <GiLargePaintBrush /> },
+    { func: saveAsSvg, icon: <GiSave />, hoverName: "Save as Png" },
+    { func: saveAsJson, icon: <HiSaveAs />, hoverName: "Save As Json" },
+    { func: openAsJson, icon: <GrUpload />, hoverName: "Load From Json" },
   ];
 
   const UserDropdown = () => {
@@ -288,10 +318,18 @@ const Canvas = ({ shapes, setShapes, username, roomName, passwordValue }) => {
     return;
   }
 
-  //
+  function downloadURI(uri, name) {
+    var link = document.createElement('a');
+    link.download = name;
+    link.href = uri;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
   return (
     <div className="Container" style={{ maxWidth: width }}>
+      <input id="openShapeFile" type='file' style={{visibility: 'hidden'}}  onChange={(e)=>readFile(e)} />
       <div className="userList">
         <h3 onClick={() => setShowUsers((prevState) => !prevState)}>Users [v]</h3>
         <UserDropdown />

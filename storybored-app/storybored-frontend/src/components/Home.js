@@ -10,7 +10,11 @@ const Home = ({ callback }) => {
     navigate("/CreateRoom");
   };
 
-  const submit = () => {
+  const submit = () => { 
+    if (!/^[a-zA-Z0-9]+$/.test(passwordValue)) {
+      alert("password should contains only letters or numbers");
+      return;
+    }
     callback(nameValue, roomValue, passwordValue);
     navToCreateRoom();
   };
