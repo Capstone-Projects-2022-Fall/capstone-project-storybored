@@ -151,6 +151,14 @@ io.on("connection", (socket) => {
       }
     }
   });
+
+  socket.on("addFrame", (room) => {
+    const user = getUser(room, socket.id);
+    if (!user || !user.room) return;
+    console.log("made it");
+    rooms.get(room).shapes.push(new Map());
+    io.to(user.room).emit("newFrame");
+  });
 });
 
 app.get("/", (req, res) => {

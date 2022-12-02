@@ -11,11 +11,12 @@ import io from "socket.io-client";
 import { Stage, Layer } from "react-konva";
 import { NotificationContainer, NotificationManager } from "react-notifications";
 import Slideshow from "../Slideshow";
+import FrameManager from "../FrameManager";
 
 const width = 1600;
 const height = 800;
-const ENDPOINT = "139.144.172.98:7007";
-//const ENDPOINT = "http://localhost:7007";
+//const ENDPOINT = "139.144.172.98:7007";
+const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
 const Canvas = ({ shapes, setShapes, username, roomName }) => {
@@ -29,6 +30,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const [redoStack, updateRedoStack] = useState([]);
   const isDrawing = useRef(false);
   const isModding = useRef(false);
+  const [maxFrames, updateMaxFrames] = useState(3);
   const [players, setPlayers] = useState([]);
   const [focusedCanvas, setFocusedCanvas] = useState(0);
   const [captionText, setCaptionText] = useState("");
@@ -104,6 +106,12 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       setUri(data);
     });
 
+    socket.on("newFrame", () => {
+      console.log("mama mia");
+      setUri(uri.concat(""));
+      updateMaxFrames((maxFrames) => maxFrames + 1);
+    });
+
     return () => {
       socket.off("notification");
       socket.off("message");
@@ -111,6 +119,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
       socket.off("deleteshape");
       socket.off("update");
       socket.off("setFrames");
+      socket.off("newFrame");
     };
   }, [socket, shapes, setShapes]);
 
@@ -135,6 +144,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const handleMouseDown = (e) => {
     // setTempId((tempId) => generateId());
     const pos = e.target.getStage().getPointerPosition();
+    console.log(uri);
     try {
       if (drawing_tools.includes(tool)) {
         console.log("here");
@@ -401,19 +411,22 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     return newShape;
   }
 
-  
   return (
     <div className="Container" style={{ maxWidth: width }}>
-      
-      {showSlideshow ? (<div className="Slideshow-Page-Container">
-                          <Slideshow Frames={uri}/>
-                          <button id="move-to-canvas-button" onClick={() => setShowSlideshow(!showSlideshow)} > Back </button>
-                        </div>) : (
+      {showSlideshow ? (
+        <div className="Slideshow-Page-Container">
+          <Slideshow Frames={uri} />
+          <button id="move-to-canvas-button" onClick={() => setShowSlideshow(!showSlideshow)}>
+            {" "}
+            Back{" "}
+          </button>
+        </div>
+      ) : (
         <>
           <div className="userList">
             <h3>Users</h3>
             <UserDropdown />
-          </div> 
+          </div>
           <Toolbar items={toolbar_params} />
 
           <div className="Canvas-Container">
@@ -504,18 +517,39 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
                     socket.emit("updateCanvas", room, focusedCanvas);
                   }}
                 >
-                  <option value="0">Frame 1</option>
+                  {uri.map((frame, i) => {
+                    let name = "Frame :";
+                    name += i + 1;
+                    return (
+                      <option key={i} value={i}>
+                        {name}
+                      </option>
+                    );
+                  })}
+                  {/* <option value="0">Frame 1</option>
                   <option value="1">Frame 2</option>
-                  <option value="2">Frame 3</option>
+                  <option value="2">Frame 3</option> */}
                 </select>
+
+                <div>
+                  <button onClick={() => socket.emit("addFrame", room)}>Add Frame</button>
+                  {/* //<input
+                  //   type="number"
+                  //   value={strokeWidth}
+                  //   id="strokebox"
+                  //   onChange={(e) => {
+                  //     setStrokeWidth(parseInt(e.target.value));
+                  //     //   console.log(focusedCanvas);
+                  //   }
+
+                  // }
+                  ></input> */}
+                </div>
               </div>
 
               <div className="tools" style={{ fontSize: "1.5em" }}>
-              <button onClick={() => setShowSlideshow(!showSlideshow)} > View Slideshow </button>
+                <button onClick={() => setShowSlideshow(!showSlideshow)}> View Slideshow </button>
               </div>
-              
-              {/* </div> */}
-              {/* </div> */}
             </section>
           </div>
 
@@ -525,10 +559,11 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
             </div>
 
             <>
-              <FrameView numFrames={3} frame={uri} width={width} height={height} />
+              <FrameView numFrames={maxFrames} frame={uri} width={width} height={height} />
             </>
           </div>
-        </> )}
+        </>
+      )}
     </div>
   );
 };
