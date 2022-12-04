@@ -7,8 +7,8 @@ const Toolbar = ({items}) => {
 
     return (
         <div className='Toolbar'>
-            {items.map(i => <button key={j++} className='Toolbar-Item' style={{width: '100%', height: item_height}} 
-                            onClick = {i.func}> {i.icon} </button>)}
+            {items.map(i => <button key={j++} className='Toolbar-Item' title={i.hoverName} style={{width: '100%', height: item_height}} 
+                            onClick = {i.func}> {i.icon} </button>)}  
         </div>
     )
 }

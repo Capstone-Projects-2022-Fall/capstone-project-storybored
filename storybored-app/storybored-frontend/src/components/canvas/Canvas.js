@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
-import { GiPencil, GiSquare, GiCircle, GiPointing } from "react-icons/gi";
+import { GiPencil, GiSquare, GiCircle, GiLargePaintBrush, GiSave, GiPointing } from "react-icons/gi";
+import { GrUpload } from "react-icons/gr";
+import { HiSaveAs } from "react-icons/hi";
 import { BsFillEraserFill, BsTypeBold } from "react-icons/bs";
 import { BiShapePolygon } from "react-icons/bi";
 import Shape from "../shape/Shape";
@@ -10,16 +12,17 @@ import "./styles.css";
 import io from "socket.io-client";
 import { Stage, Layer } from "react-konva";
 import { NotificationContainer, NotificationManager } from "react-notifications";
+import { useNavigate } from "react-router-dom";
 import Slideshow from "../Slideshow";
 
 const width = 1600;
 const height = 800;
-const ENDPOINT = "139.144.172.98:7007";
-//const ENDPOINT = "http://localhost:7007";
+// const ENDPOINT = "139.144.172.98:7007";
+const ENDPOINT = "http://localhost:7007";
 const socket = io(ENDPOINT, { transports: ["websocket", "polling"] });
 
-const Canvas = ({ shapes, setShapes, username, roomName }) => {
-  //can we combine these drawing options into one object usestate?
+const Canvas = ({ shapes, setShapes, username, roomName, passwordValue }) => {
+  const navigate = useNavigate();
   const [tool, setTool] = useState("pen");
   const [strokeColor, setStrokeColor] = useState("#000"); //black
   const [fillColor, setFillColor] = useState("#fff"); //white
@@ -29,6 +32,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const [redoStack, updateRedoStack] = useState([]);
   const isDrawing = useRef(false);
   const isModding = useRef(false);
+  const [showColorSelectors, setShowColorSelectors] = useState(false);
   const [players, setPlayers] = useState([]);
   const [focusedCanvas, setFocusedCanvas] = useState(0);
   const [captionText, setCaptionText] = useState("");
@@ -43,12 +47,15 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const stageRef = React.useRef(null);
   const nickname = username;
   const room = roomName;
+  const password = passwordValue;
   const drawing_tools = ["pen", "rectangle", "circle", "custom shape", "words"];
 
   useEffect(() => {
-    socket.emit("join", { nickname, room }, (error) => {
+    socket.emit("join", { nickname, room, password }, (error) => {
       if (error) {
         console.log(error);
+        alert(error);
+        navigate("/");
         return;
       } else {
         console.log("joined server");
@@ -267,6 +274,9 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     return t;
   }
 
+  const toggleColorSelectors = () => {
+    setShowColorSelectors((prevState) => !prevState);
+  };
   const setPen = () => setTool("pen");
   const setRect = () => setTool("rectangle");
   const setCircle = () => setTool("circle");
@@ -274,6 +284,40 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const setSelect = () => setTool("select");
   const setErase = () => setTool("erase");
   const setWords = () => setTool("words");
+
+  const saveAsSvg = () => {
+    const uri = stageRef.current.toDataURL();
+    downloadURI(uri, room + '.png');
+  }
+
+  function downloadURI(uri, name) {
+    var link = document.createElement('a');
+    link.download = name;
+    link.href = uri;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  const saveAsJson = () => {
+    const uri = URL.createObjectURL(new Blob([JSON.stringify(shapes)]));
+    downloadURI(uri, room + '.json');
+  }
+
+  const openAsJson = () => {
+    document.getElementById('openShapeFile').click();
+  }
+
+  function readFile(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      setShapes(JSON.parse(e.target.result));
+    }
+
+    reader.readAsText(file);
+  }
 
   //Array containing objects for the toolbar; each object has an onClick function and an icon
   const toolbar_params = [
@@ -284,6 +328,10 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
     { func: setSelect, icon: <GiPointing /> },
     { func: setErase, icon: <BsFillEraserFill /> },
     { func: setWords, icon: <BsTypeBold /> },
+    { func: toggleColorSelectors, icon: <GiLargePaintBrush /> },
+    { func: saveAsSvg, icon: <GiSave />, hoverName: "Save as Png" },
+    { func: saveAsJson, icon: <HiSaveAs />, hoverName: "Save As Json" },
+    { func: openAsJson, icon: <GrUpload />, hoverName: "Load From Json" },
   ];
 
   const UserDropdown = () => {
@@ -404,7 +452,7 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   
   return (
     <div className="Container" style={{ maxWidth: width }}>
-      
+      <input id="openShapeFile" type='file' style={{visibility: 'hidden'}}  onChange={(e)=>readFile(e)} />
       {showSlideshow ? (<div className="Slideshow-Page-Container">
                           <Slideshow Frames={uri}/>
                           <button id="move-to-canvas-button" onClick={() => setShowSlideshow(!showSlideshow)} > Back </button>

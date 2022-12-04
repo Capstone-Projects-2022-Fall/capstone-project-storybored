@@ -31,14 +31,18 @@ const io = require("socket.io")(server, {
 
 const rooms = new Map();
 
-const addUser = (id, nickname, room) => {
+const addUser = (id, nickname, room, password) => {
   if (!rooms.has(room)) {
     rooms.set(room, {
       id: room,
+      password: password,
       users: [],
       URIs: ["", "", ""],
       shapes: [new Map(), new Map(), new Map()],
     });
+  }
+  else if (rooms.get(room).password !== password) {
+    return {error: "Password is wrong"};
   }
   for (c in rooms.get(room).users) {
     if (c.id === id && c.room === room) {
@@ -79,8 +83,8 @@ const removeUser = (id) => {
 
 //creating event handlers for socket message received events
 io.on("connection", (socket) => {
-  socket.on("join", ({ nickname, room }, callback) => {
-    const { user, error } = addUser(socket.id, nickname, room);
+  socket.on("join", ({ nickname, room, password }, callback) => {
+    const { user, error } = addUser(socket.id, nickname, room, password);
     if (error) {
       return callback(error);
     }
@@ -109,6 +113,11 @@ io.on("connection", (socket) => {
 
   socket.on("updateCanvas", (room, data) => {
     const user = getUser(room, socket.id);
+
+    if (typeof(user) === 'undefined') {
+      return;
+    }
+
     if (!rooms.has(room)) {
       return;
     }

@@ -16,9 +16,11 @@ const App = ({ context, url }) => {
   const [shapes, setShapes] = useState([]);
   const [username, setUsername] = useState("default player");
   const [roomName, setRoomName] = useState("common rabble");
-  const defineUsername = (newUsername, newRoom) => {
+  const [passwordValue, setPasswordValue] = useState("defautPassword");
+  const defineUsername = (newUsername, newRoom, newPassword) => {
     setUsername(newUsername);
     setRoomName(newRoom);
+    setPasswordValue(newPassword);
   };
 
   return (
@@ -30,7 +32,7 @@ const App = ({ context, url }) => {
               <Routes>
                 <Route path="" element={<Home callback={defineUsername} />} />
                 <Route path="/CreateRoom" element={<CreateRoom />} />
-                <Route path="/Canvas" element={<Canvas shapes={shapes} setShapes={setShapes} username={username} roomName={roomName} />} />
+                <Route path="/Canvas" element={<Canvas shapes={shapes} setShapes={setShapes} username={username} roomName={roomName} passwordValue={passwordValue} />} />
               </Routes>
             </Router>
           </UsersProvider>

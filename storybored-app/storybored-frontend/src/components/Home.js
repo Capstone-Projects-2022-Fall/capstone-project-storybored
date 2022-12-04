@@ -3,14 +3,19 @@ import { useNavigate } from "react-router-dom";
 
 const Home = ({ callback }) => {
   const navigate = useNavigate();
-  const [nameValue, setNameValue] = useState("player");
-  const [roomValue, setRoomValue] = useState("room");
+  const [nameValue, setNameValue] = useState("");
+  const [roomValue, setRoomValue] = useState("");
+  const [passwordValue, setPasswordValue] = useState("");
   const navToCreateRoom = () => {
     navigate("/CreateRoom");
   };
 
-  const submit = () => {
-    callback(nameValue, roomValue);
+  const submit = () => { 
+    if (!/^[a-zA-Z0-9]+$/.test(passwordValue)) {
+      alert("password should contains only letters or numbers");
+      return;
+    }
+    callback(nameValue, roomValue, passwordValue);
     navToCreateRoom();
   };
 
@@ -29,6 +34,12 @@ const Home = ({ callback }) => {
           Room:
         </label>
         <input type="text" id="room-input" onChange={(e) => setRoomValue(e.target.value)}></input>
+      </form>
+      <form>
+        <label htmlFor="room-input" id="room-label">
+          Password:
+        </label>
+        <input type="password" id="password-input" onChange={(e) => setPasswordValue(e.target.value)}></input>
       </form>
       <button id="create-room-button" onClick={submit}>
         That's me!
