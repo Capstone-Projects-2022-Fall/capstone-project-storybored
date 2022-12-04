@@ -15,6 +15,7 @@ const Circle = (props) => {
       strokeWidth={properties.strokeWidth}
       draggable={properties.draggable}
       listening={properties.listening}
+      rotation={properties.rotation}
       //   globalCompositeOperation={properties.globalCompositeOperation}
       //   onDragStart={}
       //   onDragMove={}

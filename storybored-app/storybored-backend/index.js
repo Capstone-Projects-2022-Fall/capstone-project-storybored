@@ -6,6 +6,7 @@ var uuid = require("uuid");
 var dotenv = require("dotenv").config();
 var cors = require("cors");
 const { map } = require("bluebird");
+const { response } = require("express");
 //
 
 const PORT = 7007;
@@ -36,7 +37,7 @@ const addUser = (id, nickname, room, password) => {
       id: room,
       password: password,
       users: [],
-      URI: ["", "", ""],
+      URIs: ["", "", ""],
       shapes: [new Map(), new Map(), new Map()],
     });
   }
@@ -56,11 +57,17 @@ const addUser = (id, nickname, room, password) => {
 };
 
 const getUser = (room, id) => {
+  if (!rooms.has(room)) {
+    return;
+  }
   let user = rooms.get(room).users.find((user) => user.id == id);
   return user;
 };
 
 const getUsers = (room) => {
+  if (!rooms.has(room)) {
+    return;
+  }
   return rooms.get(room).users;
 };
 
@@ -72,10 +79,6 @@ const removeUser = (id) => {
       return room.users.splice(index, 1)[0];
     }
   }
-  // const index = rooms.get(user.room).users.findIndex((user) => user.id == id);
-  // if (index !== -1) {
-  //   return rooms.get(user.id).users.splice(index, 1)[0];
-  // }
 };
 
 //creating event handlers for socket message received events
@@ -86,20 +89,26 @@ io.on("connection", (socket) => {
       return callback(error);
     }
     socket.join(room);
-    console.log(`${user.nickname} joined`);
+    console.log(`${user.nickname} joined ${user.room}`);
     io.to(user.room).emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
     io.to(user.room).emit("users", getUsers(user.room));
     // updateClient(socket.id, socket);
     callback();
   });
 
-  socket.on("sendData", (room, data) => {
+  socket.on("sendData", (room, focus, data) => {
     const user = getUser(room, socket.id);
+    if (!rooms.has(user.room)) {
+      return;
+    }
     let shape = JSON.parse(data);
-    rooms.get(user.room).shapes[0].set(shape.id, shape);
-    let response = JSON.stringify(rooms.get(user.room).shapes[0].get(shape.id));
+    if (shape.id === null) {
+      return;
+    }
+    rooms.get(user.room).shapes[focus].set(shape.id, shape);
+    let response = JSON.stringify(rooms.get(user.room).shapes[focus].get(shape.id));
     if (!user) return;
-    io.to(user.room).emit("message", { user: user.nickname, text: response });
+    io.to(user.room).emit("message", { user: user.nickname, text: response, frame: focus });
   });
 
   socket.on("updateCanvas", (room, data) => {
@@ -109,16 +118,35 @@ io.on("connection", (socket) => {
       return;
     }
 
+    if (!rooms.has(room)) {
+      return;
+    }
     const msg = JSON.stringify(Object.fromEntries(rooms.get(user.room).shapes[data]));
     io.to(user.id).emit("update", { message: msg });
   });
 
-  socket.on("removeShape", (room, data) => {
-    // console.log(data);
-    // console.log(room_data.shapes);
+  socket.on("removeShape", (room, focus, data) => {
     const user = getUser(room, socket.id);
-    rooms.get(user.room).shapes[0].delete(data);
+    if (!rooms.has(user.room)) {
+      return;
+    }
+    rooms.get(user.room).shapes[focus].delete(data);
     io.to(user.room).emit("deleteshape", data);
+  });
+
+  socket.on("getFrames", (room) => {
+    if (!rooms.has(room)) {
+      return;
+    }
+    let response = rooms.get(room).URIs;
+    io.to(room).emit("setFrames", response);
+  });
+
+  socket.on("updateFrames", (room, canvas, data) => {
+    if (!rooms.has(room)) {
+      return;
+    }
+    rooms.get(room).URIs[canvas] = data;
   });
 
   socket.on("disconnect", () => {

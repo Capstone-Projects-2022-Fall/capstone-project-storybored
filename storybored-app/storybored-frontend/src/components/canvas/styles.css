@@ -12,13 +12,20 @@
 
 .options .tools {
   position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  padding: 1rem 1rem;
 }
 
+.options .tools .react-colorful {
+  height: 100px;
+  width: 140px;
+}
 .Canvas-Container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0.5em ;
+  margin: 0.5em;
   flex-direction: column;
 }
 
@@ -27,9 +34,9 @@
   border: black solid 1px;
 }
 
-.Toolbar {
+.Container .Toolbar {
   display: flex;
-  justify-content:flex-start;
+  justify-content: flex-start;
   align-items: center;
   flex-direction: column;
   width: 5rem;
@@ -37,10 +44,9 @@
   margin-top: 10px;
   margin-bottom: 10px;
   border: solid black 1px;
-  
 }
 
-.Toolbar-Item {
+.Container .Toolbar-Item {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -64,7 +70,7 @@
   text-align: center;
 }
 
-.Color-Selectors .react-colorful{
+.Color-Selectors .react-colorful {
   padding: 20px;
   width: 80px;
   height: 80px;
@@ -75,10 +81,9 @@
 }
 
 .Container .NotificationContainer {
-
   width: 120px;
-  max-width:120px;
-  min-width:120px;
+  max-width: 120px;
+  min-width: 120px;
   height: fit-content;
   margin: 0.5em;
   font-size: larger;
@@ -98,11 +103,7 @@
   font-size: larger;
 }
 
-.Container .userList h3{
-  cursor: pointer;
-}
-
-.Container .userList p{
+.Container .userList p, h3{
   margin: 0;
   cursor: default;
 }
@@ -110,7 +111,7 @@
 .RightContainer {
   display: flex;
   flex-direction: column;
-  align-items:flex-start;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
@@ -128,4 +129,51 @@
   min-height: 100px;
   max-width: 100%;
   max-height: 100%;
+}
+
+.Slideshow-Container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: column;
+}
+
+.Slideshow-Container .Toolbar {
+  border: none;
+  display: flex;
+  flex-flow: row;
+  width: 200px;
+  margin: 0 auto;
+}
+
+.Slideshow-Container .Toolbar-Item {
+  min-height: 50px;
+}
+
+.Slideshow-Container .Frame-Container {
+  border: solid black 1px;
+  min-width: 1040px;
+  min-height: 700px;
+}
+
+.Slideshow-Container p {
+  font-size: x-large;
+  margin: 0;
+}
+
+.Slideshow-Container input {
+  margin-top: 1em;
+  min-width: 200px;
+}
+
+.Slideshow-Page-Container {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.Slideshow-Page-Container #move-to-canvas-button{
+  margin-top: 1em;
+  width: 15%;
 }
