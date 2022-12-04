@@ -32,6 +32,7 @@ const Canvas = ({ shapes, setShapes, username, roomName, passwordValue }) => {
   const [redoStack, updateRedoStack] = useState([]);
   const isDrawing = useRef(false);
   const isModding = useRef(false);
+  const [showColorSelectors, setShowColorSelectors] = useState(false);
   const [players, setPlayers] = useState([]);
   const [focusedCanvas, setFocusedCanvas] = useState(0);
   const [captionText, setCaptionText] = useState("");
@@ -273,6 +274,9 @@ const Canvas = ({ shapes, setShapes, username, roomName, passwordValue }) => {
     return t;
   }
 
+  const toggleColorSelectors = () => {
+    setShowColorSelectors((prevState) => !prevState);
+  };
   const setPen = () => setTool("pen");
   const setRect = () => setTool("rectangle");
   const setCircle = () => setTool("circle");
@@ -284,6 +288,15 @@ const Canvas = ({ shapes, setShapes, username, roomName, passwordValue }) => {
   const saveAsSvg = () => {
     const uri = stageRef.current.toDataURL();
     downloadURI(uri, room + '.png');
+  }
+
+  function downloadURI(uri, name) {
+    var link = document.createElement('a');
+    link.download = name;
+    link.href = uri;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   const saveAsJson = () => {
