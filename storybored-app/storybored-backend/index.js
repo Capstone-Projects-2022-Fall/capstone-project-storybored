@@ -30,18 +30,17 @@ const io = require("socket.io")(server, {
 
 const rooms = new Map();
 
-const addUser = (id, nickname, room, password) => {
+const addUser = (id, nickname, room) => {
   if (!rooms.has(room)) {
     rooms.set(room, {
       id: room,
       password: password,
       users: [],
-      URI: ["", "", ""],
+      URIs: ["", "", ""],
       shapes: [new Map(), new Map(), new Map()],
     });
-  }
-  else if (rooms.get(room).password !== password) {
-    return {error: "Password is wrong"};
+  } else if (rooms.get(room).password !== password) {
+    return { error: "Password is wrong" };
   }
   for (c in rooms.get(room).users) {
     if (c.id === id && c.room === room) {
@@ -56,11 +55,17 @@ const addUser = (id, nickname, room, password) => {
 };
 
 const getUser = (room, id) => {
+  if (!rooms.has(room)) {
+    return;
+  }
   let user = rooms.get(room).users.find((user) => user.id == id);
   return user;
 };
 
 const getUsers = (room) => {
+  if (!rooms.has(room)) {
+    return;
+  }
   return rooms.get(room).users;
 };
 
@@ -72,10 +77,6 @@ const removeUser = (id) => {
       return room.users.splice(index, 1)[0];
     }
   }
-  // const index = rooms.get(user.room).users.findIndex((user) => user.id == id);
-  // if (index !== -1) {
-  //   return rooms.get(user.id).users.splice(index, 1)[0];
-  // }
 };
 
 //creating event handlers for socket message received events
@@ -86,29 +87,33 @@ io.on("connection", (socket) => {
       return callback(error);
     }
     socket.join(room);
-    console.log(`${user.nickname} joined`);
+    console.log(`${user.nickname} joined ${user.room}`);
     io.to(user.room).emit("notification", { title: "Someone joined", description: `${user.nickname} joined` });
     io.to(user.room).emit("users", getUsers(user.room));
     // updateClient(socket.id, socket);
     callback();
   });
 
-  socket.on("sendData", (room, data) => {
+  socket.on("sendData", (room, focus, data) => {
     const user = getUser(room, socket.id);
+    if (!rooms.has(user.room)) {
+      return;
+    }
     let shape = JSON.parse(data);
-    rooms.get(user.room).shapes[0].set(shape.id, shape);
-    let response = JSON.stringify(rooms.get(user.room).shapes[0].get(shape.id));
+    if (shape.id === null) {
+      return;
+    }
+    rooms.get(user.room).shapes[focus].set(shape.id, shape);
+    let response = JSON.stringify(rooms.get(user.room).shapes[focus].get(shape.id));
     if (!user) return;
-    io.to(user.room).emit("message", { user: user.nickname, text: response });
+    io.to(user.room).emit("message", { user: user.nickname, text: response, frame: focus });
   });
 
   socket.on("updateCanvas", (room, data) => {
     const user = getUser(room, socket.id);
-
-    if (typeof(user) === 'undefined') {
+    if (!rooms.has(room) || typeof user === "undefined") {
       return;
     }
-
     const msg = JSON.stringify(Object.fromEntries(rooms.get(user.room).shapes[data]));
     io.to(user.id).emit("update", { message: msg });
   });
