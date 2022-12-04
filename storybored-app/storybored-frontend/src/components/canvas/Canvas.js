@@ -45,7 +45,6 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
   const drawing_tools = ["pen", "rectangle", "circle", "custom shape", "words"];
   const password = passwordValue;
 
-
   useEffect(() => {
     socket.emit("join", { nickname, room, password }, (error) => {
       if (error) {
@@ -399,97 +398,97 @@ const Canvas = ({ shapes, setShapes, username, roomName }) => {
           <div className="tools">
             <div style={{ fontSize: "2em" }}>Tool: {tool}</div>
 
-              {/* <div> */}
-              <div className="tools" style={{ fontSize: "1.5em" }}>
-                <div>Stroke Width</div>
-                <div>
-                  <input
-                    type="number"
-                    value={strokeWidth}
-                    id="strokebox"
-                    onChange={(e) => {
-                      setStrokeWidth(parseInt(e.target.value));
-                      //   console.log(focusedCanvas);
-                    }}
-                  ></input>
-                </div>
-                <div>Caption Text</div>
+            {/* <div> */}
+            <div className="tools" style={{ fontSize: "1.5em" }}>
+              <div>Stroke Width</div>
+              <div>
                 <input
-                  type="text"
-                  id="captionbox"
-                  name="captionbox"
+                  type="number"
+                  value={strokeWidth}
+                  id="strokebox"
                   onChange={(e) => {
-                    setCaptionText(e.target.value);
+                    setStrokeWidth(parseInt(e.target.value));
+                    //   console.log(focusedCanvas);
                   }}
                 ></input>
               </div>
-              <div className="tools" style={{ fontSize: "1.2em", maxHeight: "140px" }}>
-                <p>Stroke Color</p>
-                <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
-              </div>
-              <div className="tools" style={{ fontSize: "1.2em", maxHeight: "140px" }}>
-                <p>Fill Color</p>
-                <HexColorPicker color={fillColor} onChange={setFillColor} />
-              </div>
-              <div className="tools" style={{ fontSize: "1.5em" }}>
-                <button onClick={undo}>Undo</button>
-                <button onClick={redo}>Redo</button>
-                <div>
-                  <label htmlFor="modepicker">Select Tool Mode:</label>
-                  <select
-                    name="modepicker"
-                    id="modepicker"
-                    value={selectOption}
-                    onChange={(e) => {
-                      setSelectOption(e.target.value);
-                    }}
-                  >
-                    <option value="drag">Drag</option>
-                    <option value="rotateR">Rotate Clockwise</option>
-                    <option value="rotateL">Rotate Counter Clockwise</option>
-                  </select>
-                </div>
-              </div>
-              <div className="tools" style={{ fontSize: "1.5em" }}>
-                <label htmlFor="framepicker">Current Frame:</label>
-                <select
-                  name="framepicker"
-                  id="framepicker"
-                  value={focusedCanvas}
-                  onChange={(e) => {
-                    setFocusedCanvas(parseInt(e.target.value));
-                    let empty_stack = [];
-                    updateUndoStack([...empty_stack]);
-                    updateRedoStack([...empty_stack]);
-                    // console.log(focusedCanvas);
-                    socket.emit("updateCanvas", room, focusedCanvas);
-                  }}
-                >
-                  <option value="0">Frame 1</option>
-                  <option value="1">Frame 2</option>
-                  <option value="2">Frame 3</option>
-                </select>
-              </div>
-
-              <div className="tools" style={{ fontSize: "1.5em" }}>
-              <button onClick={() => setShowSlideshow(!showSlideshow)} > View Slideshow </button>
-              </div>
-              
-              {/* </div> */}
-              {/* </div> */}
-            </section>
-          </div>
-
-          <div className="RightContainer" style={{ height: height - 120 }}>
-            <div className="NotificationContainer">
-              <NotificationContainer />
+              <div>Caption Text</div>
+              <input
+                type="text"
+                id="captionbox"
+                name="captionbox"
+                onChange={(e) => {
+                  setCaptionText(e.target.value);
+                }}
+              ></input>
             </div>
-
-            <>
-              <FrameView numFrames={3} frame={uri} width={width} height={height} />
-            </>
           </div>
-        </> )}
+          <div className="tools" style={{ fontSize: "1.2em", maxHeight: "140px" }}>
+            <p>Stroke Color</p>
+            <HexColorPicker color={strokeColor} onChange={setStrokeColor} />
+          </div>
+          <div className="tools" style={{ fontSize: "1.2em", maxHeight: "140px" }}>
+            <p>Fill Color</p>
+            <HexColorPicker color={fillColor} onChange={setFillColor} />
+          </div>
+          <div className="tools" style={{ fontSize: "1.5em" }}>
+            <button onClick={undo}>Undo</button>
+            <button onClick={redo}>Redo</button>
+            <div>
+              <label htmlFor="modepicker">Select Tool Mode:</label>
+              <select
+                name="modepicker"
+                id="modepicker"
+                value={selectOption}
+                onChange={(e) => {
+                  setSelectOption(e.target.value);
+                }}
+              >
+                <option value="drag">Drag</option>
+                <option value="rotateR">Rotate Clockwise</option>
+                <option value="rotateL">Rotate Counter Clockwise</option>
+              </select>
+            </div>
+          </div>
+          <div className="tools" style={{ fontSize: "1.5em" }}>
+            <label htmlFor="framepicker">Current Frame:</label>
+            <select
+              name="framepicker"
+              id="framepicker"
+              value={focusedCanvas}
+              onChange={(e) => {
+                setFocusedCanvas(parseInt(e.target.value));
+                let empty_stack = [];
+                updateUndoStack([...empty_stack]);
+                updateRedoStack([...empty_stack]);
+                // console.log(focusedCanvas);
+                socket.emit("updateCanvas", room, focusedCanvas);
+              }}
+            >
+              <option value="0">Frame 1</option>
+              <option value="1">Frame 2</option>
+              <option value="2">Frame 3</option>
+            </select>
+          </div>
+
+          <div className="tools" style={{ fontSize: "1.5em" }}>
+            <button onClick={() => setShowSlideshow(!showSlideshow)}> View Slideshow </button>
+          </div>
+
+          {/* </div> */}
+          {/* </div> */}
+        </section>
+      </div>
+
+      <div className="RightContainer" style={{ height: height - 120 }}>
+        <div className="NotificationContainer">
+          <NotificationContainer />
+        </div>
+
+        <>
+          <FrameView numFrames={3} frame={uri} width={width} height={height} />
+        </>
+      </div>
     </div>
   );
 };
