@@ -1,3 +1,4 @@
+const { fail } = require("assert");
 const exp = require("constants");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
@@ -12,6 +13,7 @@ describe("Backend testing", () => {
     io = new Server(httpServer);
     httpServer.listen(() => {
       const port = httpServer.address().port;
+      console.log("listening on ", port);
       clientSocket = new Client(`http://localhost:${port}`);
       io.on("connection", (socket) => {
         serverSocket = socket;
@@ -25,11 +27,40 @@ describe("Backend testing", () => {
     clientSocket.close();
   });
 
-  test("should work", (done) => {
-    clientSocket.on("users", (users) => {
-      expect(users).toBe(["bob", "mary"]);
+  //USERS EVENT TESTING
+  //
+  //
+  test("one user in room", (done) => {
+    let ppl = ["bob"];
+    let word = ppl.toString();
+    serverSocket.emit("users", word);
+    clientSocket.once("users", (arg) => {
+      expect(arg).toEqual("bob");
       done();
     });
-    serverSocket.emit("users", ["bob", "mary"]);
   });
+
+  test("three users in room", (done) => {
+    let ppl = ["bob", "mary", "petey"];
+    let word = ppl.toString();
+    serverSocket.emit("users", word);
+    clientSocket.once("users", (arg) => {
+      expect(arg).toEqual("bob,mary,petey");
+      done();
+    });
+  });
+
+  test("no users", (done) => {
+    let ppl = [];
+    let word = ppl.toString();
+    serverSocket.emit("users", word);
+    clientSocket.once("users", (arg) => {
+      expect(arg).toEqual("");
+      done();
+    });
+  });
+
+  //SHAPE MESSAGE TESTING
+  //
+  //
 });
